@@ -1,16 +1,32 @@
 Package: dia
-Title: What the Package Does (One Line, Title Case)
+Title: Monte Carlo Development Simulation and Wildlife Impacts Analysis
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Timothy",
+           family = "Fullman",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "fullman.tim@gmail.com",
+           comment = c(ORCID = "0000-0002-6908-9184"))
+Description: Implements the Development Impacts Analysis (DIA) model described
+    in Fullman et al. (in revision) Ecosphere. The DIA quantifies potential
+    impacts of future development while accounting for uncertainty in development
+    location. It simulates development under different scenarios and quantifies
+    impacts to species.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Imports: 
+    beepr,
+    doParallel,
+    doRNG,
+    foreach,
+    gdistance,
+    maptools,
+    parallel,
+    raster,
+    rgdal,
+    rgeos,
+    sp,
+    spatstat
