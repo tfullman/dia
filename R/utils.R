@@ -10,6 +10,13 @@
 #' @param proj.info Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
 #'   common to all spatial objects in the analysis.
 #'
+#' @details This function is intended to address discrepancies in spatial object
+#' projection, not to deal with issues of misaligned extent or cell size for
+#' Raster* objects. \code{projection_alignment} assumes that the user has already
+#' done initial preparation to ensure any raster files have the same extent and
+#' resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/web/packages/raster/index.html}{raster}
+#' package.
+#'
 #' @return Spatial object of the same class as \code{x}, projected to the
 #'   desired project-wide projection.
 #'

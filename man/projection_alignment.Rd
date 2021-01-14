@@ -23,3 +23,11 @@ analysis. It checks whether the projection of an object matches the desired
 projection information, indicated by \code{proj.info} and, if not, projects
 the object.
 }
+\details{
+This function is intended to address discrepancies in spatial object
+projection, not to deal with issues of misaligned extent or cell size for
+Raster* objects. \code{projection_alignment} assumes that the user has already
+done initial preparation to ensure any raster files have the same extent and
+resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/web/packages/raster/index.html}{raster}
+package.
+}
