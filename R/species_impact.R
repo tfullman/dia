@@ -189,7 +189,8 @@ infrastructure_overlap_to_zero	<- function(x, surf.disturb){
 #' @param quant Numerical value identifying the upper quartile of the calving
 #'   RSF raster. Calculated by \code{\link{calc_highquality}}.
 #' @param wah.hq.weight Western Arctic Herd (WAH) caribou habitat overlap
-#'   RasterLayer object (optional).
+#'   RasterLayer object (optional, unless analyses are being run for the WAH, in
+#'   which case it is required).
 #' @param zoi Numeric value indicating the zone of influence (m) in which habitat
 #'   quality is discounted. Defaults to 4000 m, following Wilson et al. (2013)
 #'   and Cameron et al. (2005).
@@ -282,7 +283,6 @@ infrastructure_proximity_discounting <- function(x, surf.disturb, quant, wah.hq.
 #'   calving habitat values in proximity to infrastructure and calculating the
 #'   amount of "high quality" habitat remaining (\emph{sensu} Johnson et al. 2005).
 #'
-#' @param surf.disturb
 #' @param tch.raster Character string giving the file name of the Teshekpuk
 #'   Caribou Herd (TCH) calving RasterLayer. Optional, allowing the analysis to
 #'   be run for only one herd.
@@ -293,17 +293,9 @@ infrastructure_proximity_discounting <- function(x, surf.disturb, quant, wah.hq.
 #' @param tch.calving,wah.calving RasterLayer depicting the calving resource
 #'   selection function (RSF) for the TCH and WAH, respectively. Optional,
 #'   allowing the analysis to be run for only one herd.
-#' @param wah.hq.weight
 #' @param out.df data.frame object containing the scenario information and
 #'   infrastructure summary. Created during the impact analysis by \code{\link{dia}}.
-#' @param wd.loc
-#' @param path.out
-#' @param proj.info
 #' @param tch.hq,wah.hq data.frame object(s) created by \code{\link{calc_highquality}}.
-#' @param zoi
-#' @param caribou.out
-#' @param z
-#' @param i
 #' @inheritParams infrastructure_proximity_discounting
 #'
 #' @return \code{out.df} data.frame, updated to contain the caribou impact results.

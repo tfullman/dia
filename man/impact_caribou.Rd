@@ -44,7 +44,8 @@ selection function (RSF) for the TCH and WAH, respectively. Optional,
 allowing the analysis to be run for only one herd.}
 
 \item{wah.hq.weight}{Western Arctic Herd (WAH) caribou habitat overlap
-RasterLayer object (optional).}
+RasterLayer object (optional, unless analyses are being run for the WAH, in
+which case it is required).}
 
 \item{out.df}{data.frame object containing the scenario information and
 infrastructure summary. Created during the impact analysis by \code{\link{dia}}.}

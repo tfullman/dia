@@ -34,7 +34,8 @@ roads. Created by \code{\link{footprint_generation}}.}
 RSF raster. Calculated by \code{\link{calc_highquality}}.}
 
 \item{wah.hq.weight}{Western Arctic Herd (WAH) caribou habitat overlap
-RasterLayer object (optional).}
+RasterLayer object (optional, unless analyses are being run for the WAH, in
+which case it is required).}
 
 \item{zoi}{Numeric value indicating the zone of influence (m) in which habitat
 quality is discounted. Defaults to 4000 m, following Wilson et al. (2013)
