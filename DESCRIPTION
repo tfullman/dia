@@ -24,6 +24,7 @@ Imports:
     foreach,
     gdistance,
     maptools,
+    methods,
     parallel,
     raster,
     rgdal,
