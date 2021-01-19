@@ -30,4 +30,5 @@ Imports:
     rgdal,
     rgeos,
     sp,
-    spatstat
+    spatstat,
+    withr
