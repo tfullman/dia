@@ -211,7 +211,7 @@ infrastructure_overlap_to_zero	<- function(x, surf.disturb){
 #' @param z Iterator value used by \code{\link{dia}} to specify the development
 #'   scenario being analyzed.
 #' @param i Iterator value used by \code{\link{dia}} to run development simulation
-#'   and impacts analyses in parallel.
+#'   and impacts analyses in parallel, indicating the specific iteration being run.
 #'
 #' @return Integer value specifying the number of high-quality habitat pixels
 #'   (weighted value if \code{wah = TRUE}) remaining after discounting.

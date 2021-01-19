@@ -66,7 +66,7 @@ for each scenario. Defaults to 100.}
 scenario being analyzed.}
 
 \item{i}{Iterator value used by \code{\link{dia}} to run development simulation
-and impacts analyses in parallel.}
+and impacts analyses in parallel, indicating the specific iteration being run.}
 }
 \value{
 Integer value specifying the number of high-quality habitat pixels
