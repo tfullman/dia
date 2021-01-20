@@ -235,7 +235,7 @@
 #'       "AltD_restrictions_pad.tif"),
 #'     road.res.files=c("AltAplus_restrictions_road.tif", "AltA_restrictions_road.tif",
 #'       "AltB_restrictions_road.tif", "AltC_restrictions_road.tif",
-#'       "AltD_restrictions_road"),
+#'       "AltD_restrictions_road.tif"),
 #'     npra.file="NPRA_Boundary", tch.raster="tch_calving.tif",
 #'     wah.raster=c("WAH_calving.tif", "WAH_calving_overlap_weight.tif"),
 #'     shorebird.raster=c("SESA_HSI_NPRA.tif", "AMGP_HSI_NPRA.tif", "BBPL_HSI_NPRA.tif",
