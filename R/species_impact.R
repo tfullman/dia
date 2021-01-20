@@ -116,7 +116,7 @@ calc_highquality <- function(x, y = NULL, z = NULL, wah = FALSE, sb = FALSE){
   if(sb) x[raster::values(x) <= z] <- NA
 
   ## Calculate the quantiles for the species raster
-  quant <- stats::quantile(x)
+  quant <- raster::quantile(x)
   ## Calculate the number of pixels of "high quality" habitat (values in the upper quartile, following
   ## Johnson et al. 2005).
   highquality.orig <- length(x[x > quant[4]])
