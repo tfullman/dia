@@ -32,3 +32,5 @@ Imports:
     sp,
     spatstat,
     withr
+URL: https://github.com/tfullman/dia
+BugReports: https://github.com/tfullman/dia/issues
