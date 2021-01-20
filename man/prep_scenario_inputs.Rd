@@ -10,8 +10,8 @@ prep_scenario_inputs(
   cost.map,
   cost.water,
   willow.cpf.ras,
-  pad.res.file = pad.res.files[z],
-  road.res.file = road.res.files[z],
+  pad.res.file,
+  road.res.file,
   alt.b.rd.stranded.res.file = NULL,
   alt.b.stranded.lease.file = NULL,
   alt.c.row.file = NULL,
@@ -42,18 +42,12 @@ likelihood, of water crossings (Wilson et al. 2013). Created by \code{\link{prep
 \item{pad.res.file}{Character string specifying the file name for the raster
 containing scenario-specific restrictions for gravel pad (i.e., CPF and
 satellite pad) placement. Values may consist of 0 (no development), 0.1
-(reduced likelihood of development), or 1 (unrestricted development).
-Defaults to selecting one file from the \code{pad.res.files} object given
-as an input to the \code{\link{dia}} function, using the iterator \code{z}
-to select the scenario-specific restriction layer.}
+(reduced likelihood of development), or 1 (unrestricted development).}
 
 \item{road.res.file}{Character string indicating the file name for the raster
 containing scenario-specific restrictions for road placement. Values may
 consist of 0 (no development), 0.1 (reduced likelihood of development), or
-1 (unrestricted development). Defaults to selecting one file from the
-\code{road.res.files} object given as an input to the \code{\link{dia}}
-function, using the iterator \code{z} to select the scenario-specific
-restriction layer.}
+1 (unrestricted development).}
 
 \item{alt.b.rd.stranded.res.file}{Character string specifying the file name for
 the road development restriction raster for stranded leases under Alternative

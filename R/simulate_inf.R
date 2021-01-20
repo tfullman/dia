@@ -207,16 +207,10 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, cost
 #'   containing scenario-specific restrictions for gravel pad (i.e., CPF and
 #'   satellite pad) placement. Values may consist of 0 (no development), 0.1
 #'   (reduced likelihood of development), or 1 (unrestricted development).
-#'   Defaults to selecting one file from the \code{pad.res.files} object given
-#'   as an input to the \code{\link{dia}} function, using the iterator \code{z}
-#'   to select the scenario-specific restriction layer.
 #' @param road.res.file Character string indicating the file name for the raster
 #'   containing scenario-specific restrictions for road placement. Values may
 #'   consist of 0 (no development), 0.1 (reduced likelihood of development), or
-#'   1 (unrestricted development). Defaults to selecting one file from the
-#'   \code{road.res.files} object given as an input to the \code{\link{dia}}
-#'   function, using the iterator \code{z} to select the scenario-specific
-#'   restriction layer.
+#'   1 (unrestricted development).
 #' @param alt.b.rd.stranded.res.file Character string specifying the file name for
 #'   the road development restriction raster for stranded leases under Alternative
 #'   B. Optional, allowing the code to be run for scenarios other than Alternative B.
@@ -252,8 +246,8 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, cost
 #' @references Wilson RR, Liebezeit JR, Loya WM. 2013. Accounting for uncertainty in oil and
 #'   gas development impacts to wildlife in Alaska. Conservation Letters
 #'   6:350-358.
-prep_scenario_inputs <- function(scenario, oil.av, cost.map, cost.water, willow.cpf.ras, pad.res.file = pad.res.files[z],
-                                 road.res.file = road.res.files[z], alt.b.rd.stranded.res.file = NULL, alt.b.stranded.lease.file = NULL,
+prep_scenario_inputs <- function(scenario, oil.av, cost.map, cost.water, willow.cpf.ras, pad.res.file,
+                                 road.res.file, alt.b.rd.stranded.res.file = NULL, alt.b.stranded.lease.file = NULL,
                                  alt.c.row.file = NULL, alt.d.north.file = NULL, wd.loc, path.in, proj.info, z){
 
   #------------------------------------------------------------------------
