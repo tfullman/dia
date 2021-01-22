@@ -186,6 +186,7 @@
 #'   to path.out. Regardless, the run times for each iteration are saved in an
 #'   .RData file and the overall model run time is saved as a .csv file.
 #' @importFrom doRNG %dorng%
+#' @importFrom foreach %dopar%
 #' @export
 #'
 #' @references BLM \[Bureau of Land Management\] 2019a. National Petroleum Reserve
