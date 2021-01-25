@@ -399,8 +399,8 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
                                                                          road.res = scen.inputs$road_res, rd.exist = gen.inputs$rd_exist,
                                                                          tr.cost.alt.b.stranded = scen.inputs$tr_cost_B_stranded,
                                                                          maxd2sat = maxd2sat, mind2sat = mind2sat, n.sat = n.sat,
-                                                                         n.iter = n.iter, path.out = path.out, proj.info = proj.info, scenario = scenario,
-                                                                         z = z, i = i)
+                                                                         n.iter = n.iter, wd.loc = wd.loc, path.out = path.out, proj.info = proj.info,
+                                                                         scenario = scenario, debug.out = debug.out, z = z, i = i)
 
                                            ## Add the Willow CPF to the cpf.sp object
                                            cpf.spdf <- rbind(gen.inputs$willow_spdf, sp::SpatialPointsDataFrame(cpf.iter$cpf_sp, data=cpf.iter$cpf_df))
