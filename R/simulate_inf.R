@@ -761,24 +761,25 @@ generate_sat_rd <- function(cpf.df, cpf.sp, pad.exist, exist.coords, oil.av.res,
     if(roadless.check == 0){
       ## Connect satellites to their CPF with infield roads
       rd.data1 <- lcp_rds_infield(x=tmp.sat.df, tr=tr.cost.alt, cost.map=cost.map, cpf.df=cpf.df,
-                                  min.dist.exist=min.dist.exist, wd.loc=wd.loc, path.out=path.out, scenario=scenario,
+                                  min.dist.exist=min.dist.exist, debug.out=debug.out,
+                                  wd.loc=wd.loc, path.out=path.out, scenario=scenario,
                                   n.iter=n.iter, j=j, z=z, i=i)
       ## Connect anchor field to existing infrastructure
       if(j == 1){
         rd.data2 <- lcp_rds_outfield(x=rd.data1$tmp_rd_df, tmp.rd.sl=rd.data1$tmp_rd_sl,
                                      tr=tr.cost.alt, cost.map=cost.map, min.dist.exist=min.dist.exist, exist.coords=exist.coords,
                                      road.res=road.res, rd.exist=rd.exist, alt.b.stranded.leases=alt.b.stranded.leases,
-                                     tr.cost.alt.c.row=tr.cost.alt.c.row, alt.d.TLnorth=alt.d.TLnorth, wd.loc=wd.loc,
-                                     path.out=path.out, scenario=scenario, n.iter=n.iter, roadless.check=roadless.check, j=j,
-                                     z=z, i=i)
+                                     tr.cost.alt.c.row=tr.cost.alt.c.row, alt.d.TLnorth=alt.d.TLnorth, debug.out=debug.out,
+                                     wd.loc=wd.loc, path.out=path.out, scenario=scenario, n.iter=n.iter, roadless.check=roadless.check,
+                                     j=j, z=z, i=i)
       } else{
         rd.data2 <- lcp_rds_outfield(x=rd.data1$tmp_rd_df, tmp.rd.sl=rd.data1$tmp_rd_sl,
                                      rd.df=rd.data2$rd_df, rd.sl=rd.data2$rd_sl, tr=tr.cost.alt, cost.map=cost.map,
                                      min.dist.exist=min.dist.exist, exist.coords=exist.coords, road.res=road.res,
                                      rd.exist=rd.exist, alt.b.stranded.leases=alt.b.stranded.leases,
-                                     tr.cost.alt.c.row=tr.cost.alt.c.row, alt.d.TLnorth=alt.d.TLnorth, wd.loc=wd.loc,
-                                     path.out=path.out, scenario=scenario, n.iter=n.iter, roadless.check=roadless.check, j=j,
-                                     z=z, i=i)
+                                     tr.cost.alt.c.row=tr.cost.alt.c.row, alt.d.TLnorth=alt.d.TLnorth, debug.out=debug.out,
+                                     wd.loc=wd.loc, path.out=path.out, scenario=scenario, n.iter=n.iter, roadless.check=roadless.check,
+                                     j=j, z=z, i=i)
       }
     }
 
@@ -786,24 +787,26 @@ generate_sat_rd <- function(cpf.df, cpf.sp, pad.exist, exist.coords, oil.av.res,
     if(roadless.check == 1){
       ## Connect satellites to their CPF with infield roads
       rd.data1 <- lcp_rds_infield(x=tmp.sat.df, tr=tr.cost.alt.b.stranded, cost.map=cost.map,
-                                  cpf.df=cpf.df, min.dist.exist=min.dist.exist, wd.loc=wd.loc, path.out=path.out,
-                                  scenario=scenario, n.iter=n.iter, j=j, z=z, i=i)
+                                  cpf.df=cpf.df, min.dist.exist=min.dist.exist, debug.out=debug.out,
+                                  wd.loc=wd.loc, path.out=path.out, scenario=scenario,
+                                  n.iter=n.iter, j=j, z=z, i=i)
       ## Connect anchor field to existing infrastructure
       if(j == 1){
         rd.data2 <- lcp_rds_outfield(x=rd.data1$tmp_rd_df, tmp.rd.sl=rd.data1$tmp_rd_sl,
                                      tr=tr.cost.alt.b.stranded, cost.map=cost.map, min.dist.exist=min.dist.exist,
                                      exist.coords=exist.coords, road.res=road.res, rd.exist=rd.exist,
                                      alt.b.stranded.leases=alt.b.stranded.leases, tr.cost.alt.c.row=tr.cost.alt.c.row,
-                                     alt.d.TLnorth=alt.d.TLnorth, wd.loc=wd.loc, path.out=path.out, scenario=scenario,
-                                     n.iter=n.iter, roadless.check=roadless.check, j=j, z=z, i=i)
+                                     alt.d.TLnorth=alt.d.TLnorth, debug.out=debug.out,
+                                     wd.loc=wd.loc, path.out=path.out, scenario=scenario, n.iter=n.iter, roadless.check=roadless.check,
+                                     j=j, z=z, i=i)
       } else{
         rd.data2 <- lcp_rds_outfield(x=rd.data1$tmp_rd_df, tmp.rd.sl=rd.data1$tmp_rd_sl,
                                      rd.df=rd.data2$rd_df, rd.sl=rd.data2$rd_sl, tr=tr.cost.alt.b.stranded, cost.map=cost.map,
                                      min.dist.exist=min.dist.exist, exist.coords=exist.coords, road.res=road.res,
                                      rd.exist=rd.exist, alt.b.stranded.leases=alt.b.stranded.leases,
-                                     tr.cost.alt.c.row=tr.cost.alt.c.row, alt.d.TLnorth=alt.d.TLnorth, wd.loc=wd.loc,
-                                     path.out=path.out, scenario=scenario, n.iter=n.iter, roadless.check=roadless.check, j=j,
-                                     z=z, i=i)
+                                     tr.cost.alt.c.row=tr.cost.alt.c.row, alt.d.TLnorth=alt.d.TLnorth, debug.out=debug.out,
+                                     wd.loc=wd.loc, path.out=path.out, scenario=scenario, n.iter=n.iter, roadless.check=roadless.check,
+                                     j=j, z=z, i=i)
       }
     }
 
@@ -818,8 +821,8 @@ generate_sat_rd <- function(cpf.df, cpf.sp, pad.exist, exist.coords, oil.av.res,
       if(nrow(sat.same.df) >= 1){
         ## Connect satellites to their CPF with infield roads
         rd.data1 <- lcp_rds_infield(x=sat.same.df, tr=tr.cost.alt, cost.map=cost.map, cpf.df=cpf.df,
-                                    min.dist.exist=min.dist.exist, wd.loc=wd.loc, path.out=path.out, scenario=scenario,
-                                    n.iter=n.iter, j=j, z=z, i=i)
+                                    min.dist.exist=min.dist.exist, debug.out=debug.out, wd.loc=wd.loc,
+                                    path.out=path.out, scenario=scenario, n.iter=n.iter, j=j, z=z, i=i)
       }
 
       ## Connect any satellites that are in the same region but not connected to the CPF
@@ -873,12 +876,12 @@ generate_sat_rd <- function(cpf.df, cpf.sp, pad.exist, exist.coords, oil.av.res,
               ## Identify the candidate coordinates among existing roads and satellites for
               ## closest point
               cand.coords <- rbind(data.frame(dev="sat", num=c(west.sat$sat,
-                                                               sat.dif.df3$sat[1:(bb-1)]), x=c(west.sat$x, sat.dif.df3$x[1:(bb-1)]),
-                                              y=c(west.sat$y, sat.dif.df3$y[1:(bb-1)])),
-                                   data.frame(dev="rd", num=1:nrow(tmp.rd.df.dif), x=tmp.rd.df.dif$x,
-                                              y=tmp.rd.df.dif$y))
+                sat.dif.df3$sat[1:(bb-1)]), x=c(west.sat$x, sat.dif.df3$x[1:(bb-1)]),
+                y=c(west.sat$y, sat.dif.df3$y[1:(bb-1)])), data.frame(dev="rd",
+                num=1:nrow(tmp.rd.df.dif), x=tmp.rd.df.dif$x, y=tmp.rd.df.dif$y))
               cand.coords$dist_sat <- raster::pointDistance(p1=cbind(sat.dif.df3$x[bb],
-                                                                     sat.dif.df3$y[bb]),	p2=cbind(cand.coords$x, cand.coords$y), lonlat=FALSE)
+                sat.dif.df3$y[bb]),	p2=cbind(cand.coords$x, cand.coords$y),
+                lonlat=FALSE)
               min.cand <- cand.coords[which.min(cand.coords$dist_sat),]
 
               ## Connect to that feature using least cost paths, as long as the satellite is
@@ -886,9 +889,9 @@ generate_sat_rd <- function(cpf.df, cpf.sp, pad.exist, exist.coords, oil.av.res,
               ## Otherwise, the pad is already connected and no road is needed.
               if(min.cand$dist_sat > min(raster::res(cost.map))){
                 rd.tmp <- gdistance::shortestPath(x=tr.cost.alt, origin=c(sat.dif.df3$x[bb],
-                                                                          sat.dif.df3$y[bb]), goal=c(min.cand$x, min.cand$y), output="SpatialLines")
+                  sat.dif.df3$y[bb]), goal=c(min.cand$x, min.cand$y), output="SpatialLines")
                 tmp.rd.df.dif2 <- as.data.frame(cbind(cpf=min.dist.exist$cpf[j],
-                                                      sat=sat.dif.df3$sat[bb], sp::coordinates(rd.tmp)[[1]][[1]]))
+                  sat=sat.dif.df3$sat[bb], sp::coordinates(rd.tmp)[[1]][[1]]))
                 tmp.rd.df.dif <- rbind(tmp.rd.df.dif, tmp.rd.df.dif2)
                 rd.data1$tmp_rd_sl <- rbind(rd.data1$tmp_rd_sl, rd.tmp)
               }
@@ -939,14 +942,16 @@ generate_sat_rd <- function(cpf.df, cpf.sp, pad.exist, exist.coords, oil.av.res,
           rd.data2 <- lcp_rds_outfield(x=rd.0s, y=rd.data1$tmp_rd_df, tmp.rd.sl=rd.data1$tmp_rd_sl,
                                        tr=tr.cost.alt, cost.map=cost.map, min.dist.exist=min.dist.exist,
                                        exist.coords=exist.coords, road.res=road.res, rd.exist=rd.exist,
-                                       alt.d.TLnorth=alt.d.TLnorth, wd.loc=wd.loc, path.out=path.out, scenario=scenario,
-                                       n.iter=n.iter, roadless.check=roadless.check, j=j, z=z, i=i)
+                                       alt.d.TLnorth=alt.d.TLnorth, debug.out=debug.out, wd.loc=wd.loc,
+                                       path.out=path.out, scenario=scenario, n.iter=n.iter,
+                                       roadless.check=roadless.check, j=j, z=z, i=i)
         } else{
           rd.data2 <- lcp_rds_outfield(x=rd.0s, y=rd.data1$tmp_rd_df, tmp.rd.sl=rd.data1$tmp_rd_sl,
                                        rd.df=rd.data2$rd_df, rd.sl=rd.data2$rd_sl, tr=tr.cost.alt, cost.map=cost.map,
                                        min.dist.exist=min.dist.exist, exist.coords=exist.coords, road.res=road.res,
-                                       rd.exist=rd.exist, alt.d.TLnorth=alt.d.TLnorth, wd.loc=wd.loc, path.out=path.out,
-                                       scenario=scenario, n.iter=n.iter, roadless.check=roadless.check, j=j, z=z, i=i)
+                                       rd.exist=rd.exist, alt.d.TLnorth=alt.d.TLnorth, debug.out=debug.out,
+                                       wd.loc=wd.loc, path.out=path.out, scenario=scenario, n.iter=n.iter,
+                                       roadless.check=roadless.check, j=j, z=z, i=i)
         }
       } else{
         ## This situation should be rare, only being implemented if the CPF and all associated
