@@ -44,8 +44,6 @@ inf_summary <- function(out.df, cpf.spdf, sat.spdf, rd.sl, surf.disturb, npra.fi
   ## Calculate area of surface disturbance based on the surface disturbance footprint created by footprint_generation().
   out.df$surface_disturb_ha <- raster::area(surf.disturb)/10000
 
-  ## Crop the 4 km surface disturbance buffer (created above) with , then calculate its area in hectares
-
   ## Calculate the area within the zoi (default 4 km) of development, first cropping with the NPR-A
   ## boundary polygon to ensure disturbance is only counted within the NPR-A.
   sd.buf <- raster::buffer(x=surf.disturb, width=zoi)
