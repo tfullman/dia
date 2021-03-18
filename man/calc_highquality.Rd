@@ -34,10 +34,10 @@ and (if \code{wah = TRUE}) the weighted high-quality value (\code{highquality.we
 caribou and shorebird impact analyses (\code{\link{impact_caribou}} and
 \code{\link{impact_shorebird}}) by calculating quantiles of an input raster
 and determining the number of high-quality pixels (\emph{sensu} Johnson et
-al. 2005). See Fullman et al. (in review) for details.
+al. 2005). See Fullman et al. (in press) for details.
 }
 \references{
-Fullman TJ, Sullender BK, Cameron MD, Joly K. in review. Simulation modeling
+Fullman TJ, Sullender BK, Cameron MD, Joly K. in press. Simulation modeling
 accounts for uncertainty while quantifying ecological effects of development
 alternatives. Ecosphere.
 

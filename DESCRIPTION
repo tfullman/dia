@@ -1,6 +1,6 @@
 Package: dia
 Title: Monte Carlo Development Simulation and Wildlife Impacts Analysis
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person(given = "Timothy",
            family = "Fullman",
@@ -8,7 +8,7 @@ Authors@R:
            email = "fullman.tim@gmail.com",
            comment = c(ORCID = "0000-0002-6908-9184"))
 Description: Implements the Development Impacts Analysis (DIA) model described
-    in Fullman et al. (in review) Ecosphere. The DIA quantifies potential
+    in Fullman et al. (in press) Ecosphere. The DIA quantifies potential
     impacts of future development while accounting for uncertainty in development
     location. It simulates development under different scenarios and quantifies
     impacts to species.

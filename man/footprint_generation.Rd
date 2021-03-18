@@ -36,7 +36,7 @@ p.B-6.}
 
 \item{road.width}{Numeric value indicating the estimated road ground
 footprint width (m). Default value based on BLM (2019a) p.B-6. See Fullman
-et al. (in review) for details.}
+et al. (in press) for details.}
 }
 \value{
 List containing three SpatialPolygonsDataFrame objects:
@@ -60,7 +60,7 @@ BLM 2019b. Willow Master Development Plan Draft Environmental Impact
 Statement. Bureau of Land Management, U.S. Department of the Interior.
 Anchorage, AK, USA.
 
-Fullman TJ, Sullender BK, Cameron MD, Joly K. in review. Simulation modeling
+Fullman TJ, Sullender BK, Cameron MD, Joly K. in press. Simulation modeling
 accounts for uncertainty while quantifying ecological effects of development
 alternatives. Ecosphere.
 }

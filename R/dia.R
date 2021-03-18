@@ -1,10 +1,10 @@
 #' Wrapper function to perform the DIA analysis
 #'
 #' The \code{dia} function is a wrapper that implements the overall Development
-#' Impacts Analysis (DIA) model (see Fullman et al. in review for details). The
+#' Impacts Analysis (DIA) model (see Fullman et al. in press for details). The
 #' code below is designed to analyze the proposed development alternatives in
 #' BLM (2019a), as well as one community-generated proposal (see Fullman et al.
-#' in review). It can, however, be adapted to other development scenarios.
+#' in press). It can, however, be adapted to other development scenarios.
 #' Infrastructure simulation and species impact analyses can be run individually
 #' or jointly.
 #'
@@ -98,7 +98,7 @@
 #' @param wah.raster Vector of two character strings indicating Western Arctic
 #'   Herd (WAH) raster file names. The first should specify the calving resource
 #'   selection function (RSF) raster, the second the weighting raster. See
-#'   Fullman et al. (in review) for details. Optional, allowing the analysis to
+#'   Fullman et al. (in press) for details. Optional, allowing the analysis to
 #'   be run without the WAH or without any impact analyses. Failure to specify
 #'   this or \code{tch.raster} means the caribou impact analysis will not be run.
 #' @param shorebird.raster Vector of character strings indicating shorebird
@@ -206,7 +206,7 @@
 #'   caribou and petroleum development: Distributional, nutritional, and
 #'   reproductive implications. Arctic 58:1-9.
 #'
-#' Fullman TJ, Sullender BK, Cameron MD, Joly K. in review. Simulation modeling
+#' Fullman TJ, Sullender BK, Cameron MD, Joly K. in press. Simulation modeling
 #'   accounts for uncertainty while quantifying ecological effects of development
 #'   alternatives. Ecosphere.
 #'

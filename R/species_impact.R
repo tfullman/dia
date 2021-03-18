@@ -21,7 +21,7 @@
 #'   p.B-6.
 #' @param road.width Numeric value indicating the estimated road ground
 #'   footprint width (m). Default value based on BLM (2019a) p.B-6. See Fullman
-#'   et al. (in review) for details.
+#'   et al. (in press) for details.
 #'
 #' @return List containing three SpatialPolygonsDataFrame objects:
 #'   \code{cpf_footprints}, \code{sat_footprints}, and \code{surf_disturb}, which
@@ -36,7 +36,7 @@
 #'   Statement. Bureau of Land Management, U.S. Department of the Interior.
 #'   Anchorage, AK, USA.
 #'
-#' Fullman TJ, Sullender BK, Cameron MD, Joly K. in review. Simulation modeling
+#' Fullman TJ, Sullender BK, Cameron MD, Joly K. in press. Simulation modeling
 #'   accounts for uncertainty while quantifying ecological effects of development
 #'   alternatives. Ecosphere.
 footprint_generation <- function(cpf.spdf, sat.spdf, rd.sl, proj.info, area.cpf = 100*4046.86,
@@ -81,7 +81,7 @@ footprint_generation <- function(cpf.spdf, sat.spdf, rd.sl, proj.info, area.cpf 
 #'   caribou and shorebird impact analyses (\code{\link{impact_caribou}} and
 #'   \code{\link{impact_shorebird}}) by calculating quantiles of an input raster
 #'   and determining the number of high-quality pixels (\emph{sensu} Johnson et
-#'   al. 2005). See Fullman et al. (in review) for details.
+#'   al. 2005). See Fullman et al. (in press) for details.
 #'
 #' @param x A caribou calving resource selection function (RSF) or shorebird
 #'   habitat suitability index (HSI) RasterLayer object.
@@ -100,7 +100,7 @@ footprint_generation <- function(cpf.spdf, sat.spdf, rd.sl, proj.info, area.cpf 
 #'   number of high-quality pixels in the input raster (\code{highquality.orig}),
 #'   and (if \code{wah = TRUE}) the weighted high-quality value (\code{highquality.weighted}).
 #'
-#' @references Fullman TJ, Sullender BK, Cameron MD, Joly K. in review. Simulation modeling
+#' @references Fullman TJ, Sullender BK, Cameron MD, Joly K. in press. Simulation modeling
 #'   accounts for uncertainty while quantifying ecological effects of development
 #'   alternatives. Ecosphere.
 #'
