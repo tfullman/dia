@@ -1,6 +1,6 @@
 Package: dia
 Title: Monte Carlo Development Simulation and Wildlife Impacts Analysis
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: 
     person(given = "Timothy",
            family = "Fullman",
