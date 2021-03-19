@@ -34,3 +34,6 @@ Imports:
     withr
 URL: https://github.com/tfullman/dia
 BugReports: https://github.com/tfullman/dia/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
