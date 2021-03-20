@@ -29,8 +29,10 @@ Imports:
     raster,
     rgdal,
     rgeos,
+    sf,
     sp,
     spatstat,
+    terra,
     withr
 URL: https://github.com/tfullman/dia
 BugReports: https://github.com/tfullman/dia/issues

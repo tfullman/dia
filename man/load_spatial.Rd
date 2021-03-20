@@ -23,7 +23,7 @@ directory (\code{wd.loc}) to where input data are stored. Defaults to an
 Input_Data folder within the base folder.}
 }
 \value{
-A Raster* or Spatial* object, projected to the desired project-wide
+A \code{SpatRaster} or \code{sf} object, projected to the desired project-wide
 projection.
 }
 \description{

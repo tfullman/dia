@@ -6,47 +6,57 @@
 #' projection information, indicated by \code{proj.info} and, if not, projects
 #' the object.
 #'
-#' @param x Raster* or Spatial* object.
+#' @param x Raster or vector object of type \code{SpatRaster} from the \href{https://cran.r-project.org/web/packages/terra/index.html}{terra}
+#'   package or \code{sf} from the \href{https://cran.r-project.org/web/packages/sf/index.html}{sf} package.
 #' @param proj.info Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
 #'   common to all spatial objects in the analysis.
 #'
 #' @details This function is intended to address discrepancies in spatial object
 #' projection, not to deal with issues of misaligned extent or cell size for
-#' Raster* objects. \code{projection_alignment} assumes that the user has already
+#' SpatRaster objects. \code{projection_alignment} assumes that the user has already
 #' done initial preparation to ensure any raster files have the same extent and
-#' resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/web/packages/raster/index.html}{raster}
+#' resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/web/packages/terra/index.html}{terra}
 #' package.
 #'
 #' @return Spatial object of the same class as \code{x}, projected to the
 #'   desired project-wide projection.
 #'
 projection_alignment <- function(x, proj.info){
-  proj.tmp <- sp::CRS(SRS_string = proj.info)
-
-  ## Check whether the projection matches the desired projection, if not project it to match
-  if(!identical(raster::crs(x), proj.tmp)){
-    ## Process for raster objects
-    if(class(x) == "RasterLayer"){
+  ## Process for raster objects
+  if(inherits(x, "SpatRaster")){
+    ## Identify the desired projection
+    proj.tmp <- terra::crs(proj.info)
+    ## Check whether the object's projection matches the desired projection, if not project it to match
+    if(!identical(terra::crs(x), proj.tmp)){
       ## Check if there is already a defined projection and handle accordingly
-      if(is.na(raster::crs(x))){
+      if(terra::crs(x) == ""){
         x2 <- x
-        raster::crs(x2) <- proj.tmp
+        terra::crs(x2) <- proj.info
       } else{
-        y <- raster::projectExtent(x, crs=proj.tmp)
-        x2 <- raster::projectRaster(x, y)
-        x2 <- raster::mask(x2, x)
+        x2 <- terra::project(x=x, y=proj.info)
       }
     } else{
-      ## Process for Spatial* objects
-      if(is.na(raster::crs(x))){
+      x2 <- x
+    }
+  }
+
+  ## Process for Spatial* objects
+  if(inherits(x, "sf")){
+    ## Identify the desired projection
+    proj.tmp <- sf::st_crs(proj.info)$wkt
+    ## Check whether the projection matches the desired projection, if not project it to match
+    if(!identical(sf::st_crs(x)$wkt, proj.tmp)){
+      ## Check if there is already a defined projection and handle accordingly
+      if(is.na(sf::st_crs(x))){
         x2 <- x
-        sp::proj4string(x2) <- proj.tmp
+        sf::st_crs(x2) <- proj.info
       } else{
-        x2 <- sp::spTransform(x, proj.tmp)
+        x2 <- sf::st_transform(x, proj.info)
       }
     }
-  } else{
-    x2 <- x
+    else{
+      x2 <- x
+    }
   }
 
   return(x2)
@@ -71,14 +81,14 @@ projection_alignment <- function(x, proj.info){
 #'   directory (\code{wd.loc}) to where input data are stored. Defaults to an
 #'   Input_Data folder within the base folder.
 #'
-#' @return A Raster* or Spatial* object, projected to the desired project-wide
+#' @return A \code{SpatRaster} or \code{sf} object, projected to the desired project-wide
 #'   projection.
 #'
 load_spatial <- function(x, proj.info, vec = FALSE, wd.loc, path.in){
   if(vec){
-    y <- rgdal::readOGR(dsn=paste(wd.loc, path.in, sep="/"), layer=x)
+    y <- sf::st_read(dsn=paste(wd.loc, path.in, sep="/"), layer=x)
   } else{
-    y <- raster::raster(paste(wd.loc, path.in, x, sep="/"))
+    y <- terra::rast(paste(wd.loc, path.in, x, sep="/"))
   }
 
   ## Ensure this matches the projection of the other spatial data.

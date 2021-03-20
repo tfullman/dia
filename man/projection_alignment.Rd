@@ -7,7 +7,8 @@
 projection_alignment(x, proj.info)
 }
 \arguments{
-\item{x}{Raster* or Spatial* object.}
+\item{x}{Raster or vector object of type \code{SpatRaster} from the \href{https://cran.r-project.org/web/packages/terra/index.html}{terra}
+package or \code{sf} from the \href{https://cran.r-project.org/web/packages/sf/index.html}{sf} package.}
 
 \item{proj.info}{Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
 common to all spatial objects in the analysis.}
@@ -26,8 +27,8 @@ the object.
 \details{
 This function is intended to address discrepancies in spatial object
 projection, not to deal with issues of misaligned extent or cell size for
-Raster* objects. \code{projection_alignment} assumes that the user has already
+SpatRaster objects. \code{projection_alignment} assumes that the user has already
 done initial preparation to ensure any raster files have the same extent and
-resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/web/packages/raster/index.html}{raster}
+resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/web/packages/terra/index.html}{terra}
 package.
 }
