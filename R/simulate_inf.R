@@ -6,30 +6,22 @@
 #'   of infrastructure is maintained. Used by \code{\link{prep_general_inputs}}
 #'   and \code{\link{generate_sat_rd}}.
 #'
-#' @param x Spatial* object identifying the location(s) around which infrastructure
+#' @param x Spatial object identifying the location(s) around which infrastructure
 #'   is to be excluded (i.e., around which raster values will be set to zero).
-#' @param y RasterLayer containing values that will be set to zero.
+#' @param y \code{SpatRaster} object containing values that will be set to zero.
 #' @param threshold Numeric value providing the distance (m) within which raster
 #'   values will be set to zero.
 #'
-#' @return RasterLayer \code{y}, updated to have values within \code{threshold} of
+#' @return \code{SpatRaster}, \code{y}, updated to have values within \code{threshold} of
 #'   infrastructure locations, \code{x}, set to zero.
 #'
 infrastructure_exclusion_buffer <- function(x, y, threshold){
-  ## Create a SpatialPolygons object by buffering the location(s) of interest by the desired threshold.
-  x.buf <- raster::buffer(x, threshold)
-  ## Identify the cell numbers of the input raster that are overlapped by the exclusion buffer.
-  x.cells <- raster::extract(y, x.buf, small=TRUE, cellnumbers=TRUE)
-  ## Change the values of the corresponding cells to have a value of zero (as long as they are not NA).
-  for(m in 1:length(x.cells)){
-    cells.tmp <- x.cells[[m]]
-    cells.tmp2 <- stats::na.omit(cells.tmp)
-    cells.tmp3 <- raster::rowColFromCell(y, cells.tmp2[,1])
-    y[cells.tmp3] <- 0
-  }
-  return(y)
+  ## Convert the infrastructure location(s) to polygons by buffering by the desired threshold.
+  x.buf <- sf::st_buffer(x, threshold)
+  ## Set raster values to zero within threshold of infrastructure
+  y2 <- raster_to_zero(y, terra::vect(x.buf))
+  return(y2)
 }
-
 
 
 #' Simulate locations proportional to suitability and outside unavailable areas
@@ -104,22 +96,23 @@ infrastructure_spacer <- function(n.dev, im, threshold){
 #'   common to all spatial objects in the analysis.
 #'
 #' @return List containing input data used for infrastructure simulation across
-#'   all scenarios. This includes the land/water RasterLayer (\code{cost_map}),
-#'   road resistance RasterLayer that makes development across water possible
-#'   (\code{cost_water}), RasterLayer indicating relative estimated undiscovered
-#'   oil (\code{oil_av}), RasterLayer depicting the infrastructure exclusion zone
-#'   around the Willow CPF (\code{willow_cpf_ras}), SpatialPolygonsDataFrame of
-#'   existing CPF and satellite gravel pads (\code{pad_exist}), SpatialLinesDataFrame
-#'   of existing roads (\code{rd_exist}), data.frame with xy coordinates of existing
-#'   infrastructure (\code{exist_coords}), and SpatialPointsDataFrame depicting
-#'   the Willow CPF location (\code{willow_spdf}). Many of these feed into
-#'   \code{\link{prep_scenario_inputs}}.
+#'   all scenarios. This includes the land/water \code{SpatRaster} (\code{cost_map}),
+#'   road resistance \code{SpatRaster} that makes development across water possible
+#'   (\code{cost_water}), \code{SpatRaster} indicating relative estimated undiscovered
+#'   oil (\code{oil_av}), \code{SpatRaster} depicting the infrastructure exclusion zone
+#'   around the Willow CPF (\code{willow_cpf_ras}), \code{sf} \code{POINT} object depicting
+#'   existing CPF and satellite gravel pads (\code{pad_exist}), \code{sf} \code{LINESTRING}
+#'   object depicting existing roads (\code{rd_exist}), data.frame with xy
+#'   coordinates of existing roads (\code{exist_coords}), and \code{sf} \code{POINT} object
+#'   depicting the Willow CPF location (\code{willow_spdf}). Many of these feed
+#'   into \code{\link{prep_scenario_inputs}}.
 #'
 prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, cost.map.file, d2cpf = 35000,
                                 wd.loc, path.in, proj.info){
 
   ## Check that needed files are present
-  if(is.null(rd.exist.file) || is.null(pad.exist.file) || is.null(oil.av.file) || is.null(cost.map.file)) stop("Missing data: One or more of rd.exist.file, pad.exist.file, oil.av.file, or cost.map.file is missing. These each cannot be NULL if simulate_inf == TRUE.")
+  if(is.null(rd.exist.file) || is.null(pad.exist.file) || is.null(oil.av.file) || is.null(cost.map.file)) stop("Missing data: One or more of rd.exist.file, pad.exist.file, oil.av.file, or cost.map.file is missing. These each cannot be NULL if simulate.inf == TRUE.")
+
 
   #-------------------------
   ## Existing infrastructure
@@ -130,31 +123,27 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, cost
   rd.exist <- load_spatial(x=rd.exist.file, proj.info=proj.info, wd.loc=wd.loc, path.in=path.in, vec=TRUE)
   pad.exist <- load_spatial(x=pad.exist.file, proj.info=proj.info, wd.loc=wd.loc, path.in=path.in, vec=TRUE)
 
-  ## Create an SpatialPointsDataFrame just for Willow's CPF, matching the attribute formatting used below
-  willow.spdf <- pad.exist[4,]
-  willow.spdf@data <- data.frame(cpf=0, x=sp::coordinates(willow.spdf)[,1], y=sp::coordinates(willow.spdf)[,2])
+  ## Create an sf object just for Willow's CPF, matching the attribute formatting used below
+  willow.cpf <- pad.exist[4,]
+  willow.cpf$cpf <- 0
+  willow.cpf$x <- sf::st_coordinates(willow.cpf)[,1]
+  willow.cpf$y <- sf::st_coordinates(willow.cpf)[,2]
 
   ## Put the existing infrastructure data attribute table into the format used below
-  pad.exist@data <- data.frame(cpf=0, sat=1:nrow(pad.exist@data), x=sp::coordinates(pad.exist)[,1],
-                               y=sp::coordinates(pad.exist)[,2])
+  pad.exist$cpf <- 0
+  pad.exist$sat <- 1:nrow(pad.exist)
+  pad.exist$x <- sf::st_coordinates(pad.exist)[,1]
+  pad.exist$y <- sf::st_coordinates(pad.exist)[,2]
 
-  ## Isolate the coordinates of the existing roads
-  exist.coords.list <- lapply(methods::slot(rd.exist, "lines"), function(x) lapply(methods::slot(x, "Lines"), function(y) methods::slot(y, "coords")))
-  for(ii in 1:length(exist.coords.list)){
-    exist.tmp <- exist.coords.list[[ii]][[1]]
-    exist.df <- data.frame(dev="exist", rd=ii, num=1:nrow(exist.tmp), x=exist.tmp[,1], y=exist.tmp[,2])
-    if(ii == 1) exist.coords <- exist.df else exist.coords <- rbind(exist.coords, exist.df)
-  }
-
-  ## Change the format of this to match that used below
-  exist.coords.df <- exist.coords[,c(3,2,4:5)]
-  names(exist.coords.df)[1:2] <- c("cpf", "sat")
-  exist.coords.df$cpf <- 0
+  ## Isolate the coordinates of the existing roads and rearrange to match the format used below
+  exist.coords.df <- as.data.frame(sf::st_coordinates(rd.exist))
+  exist.coords.df <- exist.coords.df[,c(3:4,1:2)]
+  names(exist.coords.df) <- c("cpf", "sat", "x", "y")
 
 
-  #-------------------------------
+  #-----------------------------------------
   ## Cost map and estimated undiscovered oil
-  #-------------------------------
+  #-----------------------------------------
 
   ## Load the cost.map raster, indicating water and land areas and make sure it aligns with the desired projection
   cost.map <- load_spatial(x=cost.map.file, proj.info=proj.info, wd.loc=wd.loc, path.in=path.in)
@@ -171,8 +160,8 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, cost
   ## raster that identifies the pixels around the existing CPF and gives them a value of 0 and gives all the
   ## other pixels a value of 1.
   willow.cpf.ras <- oil.av
-  willow.cpf.ras[!is.na(raster::values(willow.cpf.ras))] <- 1
-  willow.cpf.ras <- infrastructure_exclusion_buffer(x=pad.exist[pad.exist$sat == 4,], y=willow.cpf.ras, threshold=d2cpf)
+  terra::values(willow.cpf.ras)[!is.na(terra::values(willow.cpf.ras))] <- 1
+  willow.cpf.ras <- infrastructure_exclusion_buffer(x=willow.cpf, y=willow.cpf.ras, threshold=d2cpf)
 
 
   #----------------------------------------------
@@ -180,7 +169,7 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, cost
   #----------------------------------------------
 
   return(list("cost_map"=cost.map, "cost_water"=cost.water, "oil_av"=oil.av, "willow_cpf_ras"=willow.cpf.ras,
-              "pad_exist"=pad.exist, "rd_exist"=rd.exist, "exist_coords"=exist.coords.df, "willow_spdf"=willow.spdf))
+              "pad_exist"=pad.exist, "rd_exist"=rd.exist, "exist_coords"=exist.coords.df, "willow_cpf"=willow.cpf))
 }
 
 
@@ -193,23 +182,23 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, cost
 #' the scenario-specific data. It thus must be run separately for each scenario.
 #'
 #' @param scenario Character vector of strings identifying the scenarios to be run.
-#' @param oil.av RasterLayer indicating the relative estimated undiscovered oil,
+#' @param oil.av \code{SpatRaster} indicating the relative estimated undiscovered oil,
 #'   created by \code{\link{prep_general_inputs}}.
-#' @param cost.map RasterLayer indicating land and water areas, used in gravel
+#' @param cost.map \code{SpatRaster} indicating land and water areas, used in gravel
 #'   pad simulation. Created by \code{\link{prep_general_inputs}}.
-#' @param cost.water RasterLayer indicating road-specific cost map where water
+#' @param cost.water \code{SpatRaster} indicating road-specific cost map where water
 #'   areas are assigned a value of 0.05 to indicate the possibility, with lower
 #'   likelihood, of water crossings (Wilson et al. 2013). Created by \code{\link{prep_general_inputs}}.
-#' @param willow.cpf.ras RasterLayer that restricts central processing facility
+#' @param willow.cpf.ras \code{SpatRaster} that restricts central processing facility
 #'   (CPF) generation within \code{d2cpf} of the Willow CPF. Created by
 #'   \code{\link{prep_general_inputs}}.
 #' @param pad.res.file Character string specifying the file name for the raster
 #'   containing scenario-specific restrictions for gravel pad (i.e., CPF and
-#'   satellite pad) placement. Values may consist of 0 (no development), 0.1
-#'   (reduced likelihood of development), or 1 (unrestricted development).
+#'   satellite pad) placement. Restriction values may consist of 0 (no development),
+#'   0.1 (reduced likelihood of development), or 1 (unrestricted development).
 #' @param road.res.file Character string indicating the file name for the raster
-#'   containing scenario-specific restrictions for road placement. Values may
-#'   consist of 0 (no development), 0.1 (reduced likelihood of development), or
+#'   containing scenario-specific restrictions for road placement. Restriction values
+#'   may consist of 0 (no development), 0.1 (reduced likelihood of development), or
 #'   1 (unrestricted development).
 #' @param alt.b.rd.stranded.res.file Character string specifying the file name for
 #'   the road development restriction raster for stranded leases under Alternative
@@ -229,17 +218,17 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, cost
 #' @param z Iterator value used by \code{\link{dia}} to specify the development
 #'   scenario being analyzed.
 #'
-#' @return List containing scenario-specific data for: RasterLayer indicating
+#' @return List containing scenario-specific data for: \code{SpatRaster} indicating
 #'   the relative likelihood of pad development as a function of relative
 #'   estimated undiscovered oil, development restrictions, and the presence of
 #'   waterbodies (\code{oil_av}), \code{im} version of \code{oil_av} (\code{oil_im}),
-#'   RasterLayer indicating resistance for least cost path road generation
-#'   (\code{road_res}), TransitionLayer indicating road development cost
-#'   (\code{tr_cost_alt}), TransitionLayer specific to the stranded leases in
-#'   Alternative B (\code{tr_cost_B_stranded}), RasterLayer indicating location
+#'   \code{SpatRaster} indicating resistance for least cost path road generation
+#'   (\code{road_res}), \code{TransitionLayer} indicating road development cost
+#'   (\code{tr_cost_alt}), \code{TransitionLayer} specific to the stranded leases in
+#'   Alternative B (\code{tr_cost_B_stranded}), \code{SpatRaster} indicating location
 #'   of stranded leases in Alternative B (\code{alt_B_stranded_leases}),
-#'   TransitionLayer specific to the stranded leases in the ROW area south of
-#'   Teshekpuk Lake for Alternative C (\code{tr_cost_C_row}), RasterLayer
+#'   \code{TransitionLayer} specific to the stranded leases in the ROW area south of
+#'   Teshekpuk Lake for Alternative C (\code{tr_cost_C_row}), \code{SpatRaster}
 #'   identifying discrete areas north of Teshekpuk Lake where roadless
 #'   development is possible under Alternative D (\code{alt_D_north}).
 #'
@@ -260,10 +249,10 @@ prep_scenario_inputs <- function(scenario, oil.av, cost.map, cost.water, willow.
   ## al. 2013. Areas without restrictions on infrastructure have a value of 1.
   pad.res <- load_spatial(x=pad.res.file, proj.info=proj.info, wd.loc=wd.loc, path.in=path.in)
 
-  ## The estimated undiscovered oil raster is used to simulate the locations of CPFs and satellite pads. Update the
-  ## base raster so that water (i.e., anything with a value of zero in the base cost map) gets a value of
-  ## zero in the availability raster, ensuring that CPFs and satellite pads are not built on water.
-  ## Also incorporate the scenario-specific restrictions on development so that areas closed to
+  ## The estimated undiscovered oil raster is used to simulate the locations of CPFs and satellite pads.
+  ## Update the base raster so that water (i.e., anything with a value of zero in the base cost map) gets
+  ## a value of zero in the availability raster, ensuring that CPFs and satellite pads are not built on
+  ## water. Also incorporate the scenario-specific restrictions on development so that areas closed to
   ## development or with a lower probability of development can be incorporated. Multiplying restrictions
   ## and water by estimated undiscovered oil will leave oil values unchanged in unrestricted land areas
   ## (x*1*1), set to zero in water or prohibited areas (x*0*1 or x*1*0), and lowered in areas where
@@ -293,8 +282,9 @@ prep_scenario_inputs <- function(scenario, oil.av, cost.map, cost.water, willow.
   road.cost <- road.res * cost.water
 
   ## Convert the road cost raster to a transition layer that can be used for creating roads using least
-  ## cost paths.
-  tr.cost.alt <- gdistance::transition(road.cost, transitionFunction=mean, directions=8)
+  ## cost paths. This has to be in RasterLayer, not SpatRaster, format for the transition() function to work.
+  road.cost.ras <- raster::raster(road.cost)
+  tr.cost.alt <- gdistance::transition(road.cost.ras, transitionFunction=mean, directions=8)
 
 
   #-----------------------------------------------------
@@ -317,7 +307,8 @@ prep_scenario_inputs <- function(scenario, oil.av, cost.map, cost.water, willow.
     alt.b.stranded.road.cost <- alt.b.road.stranded.res * cost.water
 
     ## Create a transition layer for stranded leases
-    tr.cost.alt.b.stranded <- gdistance::transition(alt.b.stranded.road.cost, transitionFunction=mean, directions=8)
+    alt.b.stranded.road.cost.ras <- raster::raster(alt.b.stranded.road.cost)
+    tr.cost.alt.b.stranded <- gdistance::transition(alt.b.stranded.road.cost.ras, transitionFunction=mean, directions=8)
   }
 
   ## Alternative C
@@ -332,7 +323,8 @@ prep_scenario_inputs <- function(scenario, oil.av, cost.map, cost.water, willow.
     alt.c.row.cost <- alt.c.row.res * cost.water
 
     ## Create a transition layer for ROW areas
-    tr.cost.alt.c.row <- gdistance::transition(alt.c.row.cost, transitionFunction=mean, directions=8)
+    alt.c.row.cost.ras <- raster::raster(alt.c.row.cost)
+    tr.cost.alt.c.row <- gdistance::transition(alt.c.row.cost.ras, transitionFunction=mean, directions=8)
   }
 
   ## Alternative D
@@ -347,8 +339,8 @@ prep_scenario_inputs <- function(scenario, oil.av, cost.map, cost.water, willow.
     alt.d.TLnorth <- load_spatial(x=alt.d.north.file, proj.info=proj.info, wd.loc=wd.loc, path.in=path.in)
 
     ## Change values outside of the region north of Teshekpuk Lake set from NA to zero.
-    alt.d.TLnorth[is.na(raster::values(alt.d.TLnorth))] <- 0
-    alt.d.TLnorth <- raster::mask(alt.d.TLnorth, mask=road.res)
+    terra::values(alt.d.TLnorth)[is.na(terra::values(alt.d.TLnorth))] <- 0
+    alt.d.TLnorth <- terra::mask(alt.d.TLnorth, mask=road.res)
   }
 
 

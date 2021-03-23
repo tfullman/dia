@@ -44,16 +44,16 @@ common to all spatial objects in the analysis.}
 }
 \value{
 List containing input data used for infrastructure simulation across
-all scenarios. This includes the land/water RasterLayer (\code{cost_map}),
-road resistance RasterLayer that makes development across water possible
-(\code{cost_water}), RasterLayer indicating relative estimated undiscovered
-oil (\code{oil_av}), RasterLayer depicting the infrastructure exclusion zone
-around the Willow CPF (\code{willow_cpf_ras}), SpatialPolygonsDataFrame of
-existing CPF and satellite gravel pads (\code{pad_exist}), SpatialLinesDataFrame
-of existing roads (\code{rd_exist}), data.frame with xy coordinates of existing
-infrastructure (\code{exist_coords}), and SpatialPointsDataFrame depicting
-the Willow CPF location (\code{willow_spdf}). Many of these feed into
-\code{\link{prep_scenario_inputs}}.
+all scenarios. This includes the land/water \code{SpatRaster} (\code{cost_map}),
+road resistance \code{SpatRaster} that makes development across water possible
+(\code{cost_water}), \code{SpatRaster} indicating relative estimated undiscovered
+oil (\code{oil_av}), \code{SpatRaster} depicting the infrastructure exclusion zone
+around the Willow CPF (\code{willow_cpf_ras}), \code{sf} \code{POINT} object depicting
+existing CPF and satellite gravel pads (\code{pad_exist}), \code{sf} \code{LINESTRING}
+object depicting existing roads (\code{rd_exist}), data.frame with xy
+coordinates of existing roads (\code{exist_coords}), and \code{sf} \code{POINT} object
+depicting the Willow CPF location (\code{willow_spdf}). Many of these feed
+into \code{\link{prep_scenario_inputs}}.
 }
 \description{
 \code{prep_general_inputs} loads and prepares input data that is common to all

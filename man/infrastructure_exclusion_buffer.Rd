@@ -7,16 +7,16 @@
 infrastructure_exclusion_buffer(x, y, threshold)
 }
 \arguments{
-\item{x}{Spatial* object identifying the location(s) around which infrastructure
+\item{x}{Spatial object identifying the location(s) around which infrastructure
 is to be excluded (i.e., around which raster values will be set to zero).}
 
-\item{y}{RasterLayer containing values that will be set to zero.}
+\item{y}{\code{SpatRaster} object containing values that will be set to zero.}
 
 \item{threshold}{Numeric value providing the distance (m) within which raster
 values will be set to zero.}
 }
 \value{
-RasterLayer \code{y}, updated to have values within \code{threshold} of
+\code{SpatRaster}, \code{y}, updated to have values within \code{threshold} of
 infrastructure locations, \code{x}, set to zero.
 }
 \description{

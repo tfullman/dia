@@ -25,28 +25,28 @@ prep_scenario_inputs(
 \arguments{
 \item{scenario}{Character vector of strings identifying the scenarios to be run.}
 
-\item{oil.av}{RasterLayer indicating the relative estimated undiscovered oil,
+\item{oil.av}{\code{SpatRaster} indicating the relative estimated undiscovered oil,
 created by \code{\link{prep_general_inputs}}.}
 
-\item{cost.map}{RasterLayer indicating land and water areas, used in gravel
+\item{cost.map}{\code{SpatRaster} indicating land and water areas, used in gravel
 pad simulation. Created by \code{\link{prep_general_inputs}}.}
 
-\item{cost.water}{RasterLayer indicating road-specific cost map where water
+\item{cost.water}{\code{SpatRaster} indicating road-specific cost map where water
 areas are assigned a value of 0.05 to indicate the possibility, with lower
 likelihood, of water crossings (Wilson et al. 2013). Created by \code{\link{prep_general_inputs}}.}
 
-\item{willow.cpf.ras}{RasterLayer that restricts central processing facility
+\item{willow.cpf.ras}{\code{SpatRaster} that restricts central processing facility
 (CPF) generation within \code{d2cpf} of the Willow CPF. Created by
 \code{\link{prep_general_inputs}}.}
 
 \item{pad.res.file}{Character string specifying the file name for the raster
 containing scenario-specific restrictions for gravel pad (i.e., CPF and
-satellite pad) placement. Values may consist of 0 (no development), 0.1
-(reduced likelihood of development), or 1 (unrestricted development).}
+satellite pad) placement. Restriction values may consist of 0 (no development),
+0.1 (reduced likelihood of development), or 1 (unrestricted development).}
 
 \item{road.res.file}{Character string indicating the file name for the raster
-containing scenario-specific restrictions for road placement. Values may
-consist of 0 (no development), 0.1 (reduced likelihood of development), or
+containing scenario-specific restrictions for road placement. Restriction values
+may consist of 0 (no development), 0.1 (reduced likelihood of development), or
 1 (unrestricted development).}
 
 \item{alt.b.rd.stranded.res.file}{Character string specifying the file name for
@@ -81,17 +81,17 @@ common to all spatial objects in the analysis.}
 scenario being analyzed.}
 }
 \value{
-List containing scenario-specific data for: RasterLayer indicating
+List containing scenario-specific data for: \code{SpatRaster} indicating
 the relative likelihood of pad development as a function of relative
 estimated undiscovered oil, development restrictions, and the presence of
 waterbodies (\code{oil_av}), \code{im} version of \code{oil_av} (\code{oil_im}),
-RasterLayer indicating resistance for least cost path road generation
-(\code{road_res}), TransitionLayer indicating road development cost
-(\code{tr_cost_alt}), TransitionLayer specific to the stranded leases in
-Alternative B (\code{tr_cost_B_stranded}), RasterLayer indicating location
+\code{SpatRaster} indicating resistance for least cost path road generation
+(\code{road_res}), \code{TransitionLayer} indicating road development cost
+(\code{tr_cost_alt}), \code{TransitionLayer} specific to the stranded leases in
+Alternative B (\code{tr_cost_B_stranded}), \code{SpatRaster} indicating location
 of stranded leases in Alternative B (\code{alt_B_stranded_leases}),
-TransitionLayer specific to the stranded leases in the ROW area south of
-Teshekpuk Lake for Alternative C (\code{tr_cost_C_row}), RasterLayer
+\code{TransitionLayer} specific to the stranded leases in the ROW area south of
+Teshekpuk Lake for Alternative C (\code{tr_cost_C_row}), \code{SpatRaster}
 identifying discrete areas north of Teshekpuk Lake where roadless
 development is possible under Alternative D (\code{alt_D_north}).
 }
