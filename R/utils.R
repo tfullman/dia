@@ -96,3 +96,27 @@ load_spatial <- function(x, proj.info, vec = FALSE, wd.loc, path.in){
 
   return(y)
 }
+
+
+
+#' Set raster values to zero
+#'
+#'\code{raster_to_zero} is a helper function that sets raster values to zero where
+#' they are overlapped by a polygon. Pixels with an \code{NA} value in the input raster
+#' will remain \code{NA} in the output.
+#'
+#' @param x \code{SpatRaster} object.
+#' @param y Polgon layer of class \code{SpatVector} representing the area within which
+#'   the raster values will be set to zero.
+#'
+#' @return \code{SpatRaster} object with the same information as \code{x}, but with
+#'   areas overlapping \code{y} set to zero.
+#'
+#' @note \code{raster_to_zero} replaces the \code{infrastructure_overlap_to_zero}
+#'   function from \code{dia} version 0.1.0. It also simplifies the code for the
+#'   \code{infrastructure_exclusion_buffer} function from that version.
+raster_to_zero	<- function(x, y){
+  x2 <- terra::mask(x=x, mask=y, updatevalue=0, inverse=TRUE, touches=TRUE)
+  x2 <- terra::mask(x2, x)
+  return(x2)
+}

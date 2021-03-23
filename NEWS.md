@@ -2,6 +2,7 @@
 
 * Switch `sp` to `sf` code.
 * Switch `raster` to `terra` code.
+* Streamline raster zeroing functions.
 
 
 # dia 0.1.0

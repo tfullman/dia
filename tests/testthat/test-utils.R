@@ -23,3 +23,16 @@ test_that("projection alignment works for multiple data formats and initial proj
   # expect_equal(terra::crs(projection_alignment(x=ras.wgs84, proj.info=proj.info)), sf::st_crs(proj.info)$wkt)
 })
 
+
+test_that("raster zeroing function works", {
+  ras.tmp <- terra::rast(vals=runif(n=126266), nrows=311, ncols=406, xmin=-36267.19,
+                         xmax=12452.81, ymin=2231350, ymax=2268670)
+  vec.tmp <- sf::st_multipoint(x=matrix(c(-7554.430, -12448.065, 2254749, 2253461),
+                                        nrow=2, ncol=2))
+  buf.tmp <- sf::st_buffer(vec.tmp, 2000)
+  ras.zeroed <- raster_to_zero(x=ras.tmp, y=terra::vect(buf.tmp))
+
+  expect_equal(class(ras.tmp), class(ras.zeroed))
+  expect_gte(length(terra::values(ras.zeroed)[terra::values(ras.zeroed)==0]), length(terra::values(ras.tmp)[terra::values(ras.tmp)==0]))
+})
+
