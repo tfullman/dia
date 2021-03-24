@@ -28,7 +28,7 @@ scenario being analyzed.}
 \item{tr}{Scenario-specific \code{TransitionLayer} object, used by the \code{gdistance}
 package for creating least cost paths.}
 
-\item{cost.map}{RasterLayer indicating land and water areas, used in gravel
+\item{cost.map}{\code{SpatRaster} indicating land and water areas, used in gravel
 pad simulation. Created by \code{\link{prep_general_inputs}}.}
 
 \item{cpf.df}{data.frame of CPF point locations. Created by \code{\link{generate_cpf}}.}
@@ -63,8 +63,8 @@ files should be written out for the purpose of debugging code. Defaults to
 }
 \value{
 List containing two objects, a temporary data.frame of generated road
-coordinates (\code{tmp_rd_df}) and a temporary SpatialLines object depicting
-generated roads (\code{tmp_rd_sl}). These are fed into \code{\link{lcp_rds_outfield}}.
+coordinates (\code{tmp_rd_df}) and a temporary \code{sf LINESTRING} object
+depicting generated roads (\code{tmp_rd_sf}). These are fed into \code{\link{lcp_rds_outfield}}.
 }
 \description{
 \code{lcp_rds_infield} is a helper function that uses least cost paths to

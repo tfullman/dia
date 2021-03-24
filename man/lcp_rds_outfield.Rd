@@ -59,7 +59,7 @@ previously created/updated by \code{lcp_rds_outfield} will be used.}
 \item{tr}{Scenario-specific \code{TransitionLayer} object, used by the \code{gdistance}
 package for creating least cost paths.}
 
-\item{cost.map}{RasterLayer indicating land and water areas, used in gravel
+\item{cost.map}{\code{SpatRaster} indicating land and water areas, used in gravel
 pad simulation. Created by \code{\link{prep_general_inputs}}.}
 
 \item{min.dist.exist}{Proximity order-sorted data.frame of distance from CPFs

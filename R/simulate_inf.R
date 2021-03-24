@@ -398,7 +398,7 @@ prep_scenario_inputs <- function(scenario, oil.av, cost.map, cost.water, willow.
 #'
 #'
 #' @return List containing a data.frame of simulated CPF locations (\code{cpf_df}),
-#'   SpatialPoints object of CPF locations (\code{cpf_sp}), and integer indicating
+#'   \code{sf} \code{POINT} object of CPF locations (\code{cpf_sf}), and integer indicating
 #'   the number of simulated CPFs in the current iteration (\code{tmp_n_cpf}).
 #'
 #' @references BLM \[Bureau of Land Management\] 2019a. National Petroleum Reserve
@@ -420,13 +420,13 @@ generate_cpf <- function(oil.im, n.cpf = c(3, 7), d2cpf = 35000, debug.out = FAL
 
   ## Prepare the output data
   cpf.df <- data.frame(cpf=1:tmp.n.cpf, x=cpf.coords$x, y=cpf.coords$y)
-  cpf.sp <- sp::SpatialPoints(coords=cpf.coords, proj4string=sp::CRS(proj.info))
+  cpf.sf <- sf::st_as_sf(x=cpf.df, coords=c("x", "y"), crs=proj.info)
 
   ## For debugging purposes, this option will write out intermediate data
   if(debug.out) utils::write.csv(cpf.df, file=paste(wd.loc, "/", path.out, "/debug_CPF_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
 
   ## Return the desired outputs
-  return(list("cpf_df"=cpf.df, "cpf_sp"=cpf.sp, "tmp_n_cpf"=tmp.n.cpf))
+  return(list("cpf_df"=cpf.df, "cpf_sf"=cpf.sf, "tmp_n_cpf"=tmp.n.cpf))
 }
 
 
@@ -442,7 +442,7 @@ generate_cpf <- function(oil.im, n.cpf = c(3, 7), d2cpf = 35000, debug.out = FAL
 #'   scenario being analyzed.
 #' @param tr Scenario-specific \code{TransitionLayer} object, used by the \code{gdistance}
 #'   package for creating least cost paths.
-#' @param cost.map RasterLayer indicating land and water areas, used in gravel
+#' @param cost.map \code{SpatRaster} indicating land and water areas, used in gravel
 #'   pad simulation. Created by \code{\link{prep_general_inputs}}.
 #' @param cpf.df data.frame of CPF point locations. Created by \code{\link{generate_cpf}}.
 #' @param min.dist.exist Proximity order-sorted data.frame of distance from CPFs
@@ -452,11 +452,11 @@ generate_cpf <- function(oil.im, n.cpf = c(3, 7), d2cpf = 35000, debug.out = FAL
 #' @inheritParams generate_cpf
 #'
 #' @return List containing two objects, a temporary data.frame of generated road
-#'   coordinates (\code{tmp_rd_df}) and a temporary SpatialLines object depicting
-#'   generated roads (\code{tmp_rd_sl}). These are fed into \code{\link{lcp_rds_outfield}}.
+#'   coordinates (\code{tmp_rd_df}) and a temporary \code{sf LINESTRING} object
+#'   depicting generated roads (\code{tmp_rd_sf}). These are fed into \code{\link{lcp_rds_outfield}}.
 #'
 lcp_rds_infield <- function(x, tr, cost.map, cpf.df, min.dist.exist, wd.loc, path.out, scenario, n.iter, j,
-                            z = NULL, i = NULL, debug.out=FALSE){
+                            z = NULL, i = NULL, debug.out = FALSE){
   ## The closest satellite pad will be connected directly to the CPF using a least cost path, then the rest
   ## will be connected to the closest infrastructure in order of proximity. Determine proximity order.
   ## Iterating through the rest in order of proximity, determine if each is closer to the CPF or an
@@ -469,8 +469,9 @@ lcp_rds_infield <- function(x, tr, cost.map, cpf.df, min.dist.exist, wd.loc, pat
     if(m == 1){
       ## Connect the closest satellite pad to the CPF using least cost paths
       rd.tmp <- gdistance::shortestPath(x=tr, origin=c(x$x[m], x$y[m]), goal=c(cpf.df$x[min.dist.exist$cpf[j]], cpf.df$y[min.dist.exist$cpf[j]]), output="SpatialLines")
-      tmp.rd.df <- as.data.frame(cbind(cpf=min.dist.exist$cpf[j], sat=x$sat[m], sp::coordinates(rd.tmp)[[1]][[1]]))
-      tmp.rd.sl <- rd.tmp
+      tmp.rd.sf <- sf::st_as_sf(rd.tmp)
+      tmp.rd.df <- as.data.frame(cbind(cpf=min.dist.exist$cpf[j], sat=x$sat[m],
+                                       x=sf::st_coordinates(tmp.rd.sf)[,1], y=sf::st_coordinates(tmp.rd.sf)[,2]))
     } else{
       ## Continue in proximity order for each remaining satellite pad, determining whether it is closest
       ## to the CPF, a previously connected pad, or a connecting road.
@@ -478,17 +479,19 @@ lcp_rds_infield <- function(x, tr, cost.map, cpf.df, min.dist.exist, wd.loc, pat
                                       x=cpf.df$x[min.dist.exist$cpf[j]], y=cpf.df$y[min.dist.exist$cpf[j]]),
                            data.frame(dev="sat", num=x$sat[1:m-1], x=x$x[1:m-1], y=x$y[1:m-1]),
                            data.frame(dev="rd", num=1:nrow(tmp.rd.df), x=tmp.rd.df$x, y=tmp.rd.df$y))
-      cand.coords$dist_sat <- raster::pointDistance(p1=cbind(x$x[m], x$y[m]), p2=cbind(cand.coords$x, cand.coords$y), lonlat=FALSE)
+      cand.coords$dist_sat <- t(terra::distance(x=cbind(x$x[m], x$y[m]), y=cbind(cand.coords$x, cand.coords$y), lonlat=FALSE))
       min.cand <- cand.coords[which.min(cand.coords$dist_sat),]
 
       ## Connect to the closest feature using least cost paths, as long as the satellite is at least
       ## one pixel away from the feature to which it is being connected. Otherwise, the pad is
       ## already connected and no road is needed.
-      if(min.cand$dist_sat > min(raster::res(cost.map))){
+      if(min.cand$dist_sat > min(terra::res(cost.map))){
         rd.tmp <- gdistance::shortestPath(x=tr, origin=c(x$x[m], x$y[m]), goal=c(min.cand$x, min.cand$y), output="SpatialLines")
-        tmp.rd.df2 <- as.data.frame(cbind(cpf=min.dist.exist$cpf[j], sat=x$sat[m], sp::coordinates(rd.tmp)[[1]][[1]]))
+        tmp.rd.sf <- rbind(tmp.rd.sf, sf::st_as_sf(rd.tmp))
+        tmp.rd.df2 <- as.data.frame(cbind(cpf=min.dist.exist$cpf[j], sat=x$sat[m],
+                                          x=sf::st_coordinates(sf::st_as_sf(rd.tmp))[,1], y=sf::st_coordinates(sf::st_as_sf(rd.tmp))[,2]))
         tmp.rd.df <- rbind(tmp.rd.df, tmp.rd.df2)
-        tmp.rd.sl <- rbind(tmp.rd.sl, rd.tmp)
+
       }
     }
   }
@@ -497,7 +500,7 @@ lcp_rds_infield <- function(x, tr, cost.map, cpf.df, min.dist.exist, wd.loc, pat
   if(debug.out) utils::write.csv(tmp.rd.df, file=paste(wd.loc, "/", path.out, "/debug_road_infield_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_cpf_", j, "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
 
   ## Return the desired products
-  return(list("tmp_rd_df"=tmp.rd.df, "tmp_rd_sl"=tmp.rd.sl))
+  return(list("tmp_rd_df"=tmp.rd.df, "tmp_rd_sf"=tmp.rd.sf))
 }
 
 

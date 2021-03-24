@@ -79,7 +79,7 @@ Optional, as this is only needed when running Alternative D.}
 \item{tr.cost.alt}{Scenario-specific \code{TransitionLayer} indicating road
 development cost. Created by \code{\link{prep_scenario_inputs}}.}
 
-\item{cost.map}{RasterLayer indicating land and water areas, used in gravel
+\item{cost.map}{\code{SpatRaster} indicating land and water areas, used in gravel
 pad simulation. Created by \code{\link{prep_general_inputs}}.}
 
 \item{road.res}{Scenario-specific road restriction RasterLayer. Created by

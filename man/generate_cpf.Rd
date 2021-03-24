@@ -60,7 +60,7 @@ and impacts analyses in parallel, indicating the specific iteration being run.}
 }
 \value{
 List containing a data.frame of simulated CPF locations (\code{cpf_df}),
-SpatialPoints object of CPF locations (\code{cpf_sp}), and integer indicating
+\code{sf} \code{POINT} object of CPF locations (\code{cpf_sf}), and integer indicating
 the number of simulated CPFs in the current iteration (\code{tmp_n_cpf}).
 }
 \description{
