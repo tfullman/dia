@@ -6,10 +6,10 @@
 \usage{
 generate_sat_rd(
   cpf.df,
-  cpf.sp,
+  cpf.sf,
   pad.exist,
   exist.coords,
-  oil.av.res,
+  pad.prob,
   maxd2sat = 56327,
   mind2sat = 6437.4,
   n.sat = c(4, 8),
@@ -18,7 +18,6 @@ generate_sat_rd(
   tr.cost.alt.c.row = NULL,
   alt.d.TLnorth = NULL,
   tr.cost.alt,
-  cost.map,
   road.res,
   rd.exist,
   tr.cost.alt.b.stranded = NULL,
@@ -32,18 +31,20 @@ generate_sat_rd(
 )
 }
 \arguments{
-\item{cpf.df}{data.frame of CPF point locations. Created by \code{\link{generate_cpf}}.}
+\item{cpf.df}{\code{data.frame} of CPF point locations. Created by \code{\link{generate_cpf}}.}
 
-\item{cpf.sp}{SpatialPoints object depicting CPF point locations. Created by \code{\link{generate_cpf}}.}
+\item{cpf.sf}{\code{sf POINT} object depicting CPF point locations. Created by \code{\link{generate_cpf}}.}
 
-\item{pad.exist}{SpatialPolygonsDataFrame of existing CPF and satellite gravel
-pad locations. Created by \code{\link{prep_general_inputs}}.}
-
-\item{exist.coords}{data.frame containing coordinates of existing infrastructure.
+\item{pad.exist}{\code{sf POINT} object of existing CPF and satellite pad locations.
 Created by \code{\link{prep_general_inputs}}.}
 
-\item{oil.av.res}{Scenario-specific relative estimated undiscovered oil RasterLayer.
-Created by \code{\link{prep_scenario_inputs}}.}
+\item{exist.coords}{\code{data.frame} containing coordinates of existing infrastructure.
+Created by \code{\link{prep_general_inputs}}.}
+
+\item{pad.prob}{\code{SpatRaster} layer depicting the scenario-specific relative
+likelihood of CPF or satellite pad generation, relative to estimated undiscovered
+oil, scenario-specific development restrictions, and waterbodies. Created by
+\code{\link{prep_scenario_inputs}}.}
 
 \item{maxd2sat}{Numeric value indicating the maximum allowed distance (m) from
 a CPF to an associated satellite production pad. Defaults to 56,327 m based
@@ -62,34 +63,32 @@ distribution. Defaults to a range of \code{c(4, 8)} satellites per CPF.}
 \item{n.iter}{Integer indicating the desired number of iterations to be run
 for each scenario. Defaults to 100.}
 
-\item{alt.b.stranded.leases}{RasterLayer identifying stranded lease locations
+\item{alt.b.stranded.leases}{\code{SpatRaster} object identifying stranded lease locations
 under Alternative B. Created by \code{\link{prep_scenario_inputs}}. Optional,
 as this is only needed when running Alternative B.}
 
-\item{tr.cost.alt.c.row}{TransitionLayer for right-of-way (ROW) areas under
+\item{tr.cost.alt.c.row}{\code{TransitionLayer} for right-of-way (ROW) areas under
 Alternative C, accounting for connecting roads that are allowed within some
 of the 50\% Teshekpuk Caribou Herd (TCH) calving kernel under this alternative.
 Created by \code{\link{prep_scenario_inputs}}. Optional, as this is only
 needed when running Alternative C.}
 
-\item{alt.d.TLnorth}{RasterLayer identifying available areas for development
+\item{alt.d.TLnorth}{\code{SpatRaster} object identifying available areas for development
 north of Teshekpuk Lake under Alternative D. Created by \code{\link{prep_scenario_inputs}}.
 Optional, as this is only needed when running Alternative D.}
 
 \item{tr.cost.alt}{Scenario-specific \code{TransitionLayer} indicating road
 development cost. Created by \code{\link{prep_scenario_inputs}}.}
 
-\item{cost.map}{\code{SpatRaster} indicating land and water areas, used in gravel
-pad simulation. Created by \code{\link{prep_general_inputs}}.}
+\item{road.res}{\code{SpatRaster} indicating resistance for least cost path road
+generation. Created by \code{\link{prep_scenario_inputs}}.}
 
-\item{road.res}{Scenario-specific road restriction RasterLayer. Created by
-\code{\link{prep_scenario_inputs}}.}
-
-\item{rd.exist}{SpatialLinesDataFrame object representing existing roads.
+\item{rd.exist}{\code{sf LINESTRING} object representing existing roads.
 Created by \code{\link{prep_general_inputs}}.}
 
-\item{tr.cost.alt.b.stranded}{TransitionLayer specific to the stranded leases
-in Alternative B. Created by \code{\link{prep_scenario_inputs}}.}
+\item{tr.cost.alt.b.stranded}{\code{TransitionLayer} specific to the stranded leases
+in Alternative B. Created by \code{\link{prep_scenario_inputs}}. Optional, allowing
+the code to be run for scenarios other than Alternative B.}
 
 \item{wd.loc}{Character string identifying the base directory containing both
 input and output data folders.}
@@ -114,10 +113,10 @@ files should be written out for the purpose of debugging code. Defaults to
 \code{FALSE}.}
 }
 \value{
-List containing four objects: a data.frame of satellite pad locations
-(\code{sat_df}), SpatialPointsDataFrame of satellite pad locations (\code{sat_spdf}),
-data.frame of road coordinates (\code{rd_df}), and SpatialLines representation
-of road locations (\code{rd_sl}).
+List containing four objects: a \code{data.frame} of satellite pad locations
+(\code{sat_df}), \code{sf POINT} object depicting satellite pad locations (\code{sat_sf}),
+\code{data.frame} of road coordinates (\code{rd_df}), and \code{sf LINESTRING}
+representation of road locations (\code{rd_sf}).
 }
 \description{
 \code{generate_sat_rd} simulates the location of satellite production pads

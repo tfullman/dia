@@ -18,7 +18,7 @@ restrictions like water or areas closed to development.}
 simulated infrastructure locations.}
 }
 \value{
-data.frame containing the xy coordinates of the simulated development.
+\code{data.frame} containing the xy coordinates of the simulated development.
 }
 \description{
 \code{infrastructure_spacer} is a helper function for infrastructure simulation

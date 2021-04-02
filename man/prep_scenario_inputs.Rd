@@ -7,8 +7,7 @@
 prep_scenario_inputs(
   scenario,
   oil.av,
-  cost.map,
-  cost.water,
+  cost.map.file,
   willow.cpf.ras,
   pad.res.file,
   road.res.file,
@@ -28,12 +27,8 @@ prep_scenario_inputs(
 \item{oil.av}{\code{SpatRaster} indicating the relative estimated undiscovered oil,
 created by \code{\link{prep_general_inputs}}.}
 
-\item{cost.map}{\code{SpatRaster} indicating land and water areas, used in gravel
-pad simulation. Created by \code{\link{prep_general_inputs}}.}
-
-\item{cost.water}{\code{SpatRaster} indicating road-specific cost map where water
-areas are assigned a value of 0.05 to indicate the possibility, with lower
-likelihood, of water crossings (Wilson et al. 2013). Created by \code{\link{prep_general_inputs}}.}
+\item{cost.map.file}{Character string specifying the file name for the cost map
+raster, which has all water areas coded as 0 and all land as 1.}
 
 \item{willow.cpf.ras}{\code{SpatRaster} that restricts central processing facility
 (CPF) generation within \code{d2cpf} of the Willow CPF. Created by
@@ -84,7 +79,7 @@ scenario being analyzed.}
 List containing scenario-specific data for: \code{SpatRaster} indicating
 the relative likelihood of pad development as a function of relative
 estimated undiscovered oil, development restrictions, and the presence of
-waterbodies (\code{oil_av}), \code{im} version of \code{oil_av} (\code{oil_im}),
+waterbodies (\code{pad_prob}), \code{im} version of \code{pad_prob} (\code{pad_im}),
 \code{SpatRaster} indicating resistance for least cost path road generation
 (\code{road_res}), \code{TransitionLayer} indicating road development cost
 (\code{tr_cost_alt}), \code{TransitionLayer} specific to the stranded leases in

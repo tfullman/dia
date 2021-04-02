@@ -5,7 +5,7 @@
 \title{Simulate CPF locations}
 \usage{
 generate_cpf(
-  oil.im,
+  pad.im,
   n.cpf = c(3, 7),
   d2cpf = 35000,
   debug.out = FALSE,
@@ -19,7 +19,7 @@ generate_cpf(
 )
 }
 \arguments{
-\item{oil.im}{Object of type "\code{im}" representing the relative likelihood
+\item{pad.im}{Object of type "\code{im}" representing the relative likelihood
 of pad development as a function of relative undiscovered oil, development
 restrictions, and the presence of waterbodies. Created by \code{\link{prep_scenario_inputs}}.}
 
@@ -59,7 +59,7 @@ scenario being analyzed.}
 and impacts analyses in parallel, indicating the specific iteration being run.}
 }
 \value{
-List containing a data.frame of simulated CPF locations (\code{cpf_df}),
+List containing a \code{data.frame} of simulated CPF locations (\code{cpf_df}),
 \code{sf} \code{POINT} object of CPF locations (\code{cpf_sf}), and integer indicating
 the number of simulated CPFs in the current iteration (\code{tmp_n_cpf}).
 }

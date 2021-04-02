@@ -7,7 +7,7 @@
 lcp_rds_infield(
   x,
   tr,
-  cost.map,
+  road.res,
   cpf.df,
   min.dist.exist,
   wd.loc,
@@ -17,23 +17,24 @@ lcp_rds_infield(
   j,
   z = NULL,
   i = NULL,
+  proj.info,
   debug.out = FALSE
 )
 }
 \arguments{
-\item{x}{data.frame of satellite pad locations, created within \code{\link{generate_sat_rd}}.
+\item{x}{\code{data.frame} of satellite pad locations, created within \code{\link{generate_sat_rd}}.
 This may contain all satellite pad locations, or a subset, depending on the
 scenario being analyzed.}
 
 \item{tr}{Scenario-specific \code{TransitionLayer} object, used by the \code{gdistance}
 package for creating least cost paths.}
 
-\item{cost.map}{\code{SpatRaster} indicating land and water areas, used in gravel
-pad simulation. Created by \code{\link{prep_general_inputs}}.}
+\item{road.res}{\code{SpatRaster} indicating resistance for least cost path road
+generation. Created by \code{\link{prep_scenario_inputs}}.}
 
-\item{cpf.df}{data.frame of CPF point locations. Created by \code{\link{generate_cpf}}.}
+\item{cpf.df}{\code{data.frame} of CPF point locations. Created by \code{\link{generate_cpf}}.}
 
-\item{min.dist.exist}{Proximity order-sorted data.frame of distance from CPFs
+\item{min.dist.exist}{Proximity order-sorted \code{data.frame} of distance from CPFs
 to existing infrastructure. Created within \code{\link{generate_sat_rd}}.}
 
 \item{wd.loc}{Character string identifying the base directory containing both
@@ -57,12 +58,15 @@ scenario being analyzed.}
 \item{i}{Iterator value used by \code{\link{dia}} to run development simulation
 and impacts analyses in parallel, indicating the specific iteration being run.}
 
+\item{proj.info}{Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
+common to all spatial objects in the analysis.}
+
 \item{debug.out}{Logical indicator of whether intermediate infrastructure .csv
 files should be written out for the purpose of debugging code. Defaults to
 \code{FALSE}.}
 }
 \value{
-List containing two objects, a temporary data.frame of generated road
+List containing two objects, a temporary \code{data.frame} of generated road
 coordinates (\code{tmp_rd_df}) and a temporary \code{sf LINESTRING} object
 depicting generated roads (\code{tmp_rd_sf}). These are fed into \code{\link{lcp_rds_outfield}}.
 }

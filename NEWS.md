@@ -2,7 +2,11 @@
 
 * Switch `sp` to `sf` code.
 * Switch `raster` to `terra` code.
-* Streamline raster zeroing functions.
+* Add helper functions and consolidate code to reduce repetition
+  * New functions:
+    * `raster_to_zero()`
+    * `gen_lcp_rd()`
+    * `gen_linkage_rd()`
 
 
 # dia 0.1.0
