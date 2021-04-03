@@ -33,6 +33,8 @@ Imports:
     sp,
     spatstat,
     terra,
+    udunits2,
+    units,
     withr
 URL: https://github.com/tfullman/dia
 BugReports: https://github.com/tfullman/dia/issues
