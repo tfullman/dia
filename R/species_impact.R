@@ -1,3 +1,46 @@
+#' Polygon rotation
+#'
+#' \code{poly_rotate} is a helper function that rotates a polygon object around
+#' its centroid. Based on code from \href{https://geocompr.robinlovelace.net/geometric-operations.html}{Geocomputation with R}.
+#'
+#' @param a Numeric value indicating the desired amount of rotation, in degrees.
+#'
+#' @return A \code{data.frame} with the coordinates of the rotated polygon coordinates.
+#'
+poly_rotate <- function(a){
+  r = a * pi / 180 ## Convert degrees to radians
+  matrix(c(cos(r), sin(r), -sin(r), cos(r)), nrow = 2, ncol = 2)
+}
+
+
+#' Gravel pad polygon creation
+#'
+#' \code{pt_to_pad} is a helper function that converts a point location to a polygon
+#' by creating a square buffer of a desired area around the point (which is taken to
+#' be the centroid). Used to represent gravel pad area of central processing facility
+#' (CPF) and satellite production pads. Used by \link{footprint_generation}.
+#'
+#' @param x \code{sf POINT} object providing pad centroid location(s).
+#' @param area Numeric value indicating the desired area of the final polygon object,
+#'   in square meters.
+#' @param proj.info Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
+#'   common to all spatial objects in the analysis.
+#'
+#' @return An \code{sf POLYGON} object representing the footprint of CPF or satellite
+#'   gravel pads.
+#'
+pt_to_pad <- function(x, area, proj.info){
+  ## Buffer to create a square polygon of the desired area
+  buf1 <- sf::st_buffer(x, dist=sqrt(2*(sqrt(area)/2)^2), nQuadSegs=1, endCaptStyle="SQUARE")
+  ## Rotate the polygon so that square edges align with the orientation of the raster pixels
+  buf.sfc <- sf::st_geometry(buf1)
+  buf.rotate <- (buf.sfc - sf::st_centroid(buf.sfc)) * rotation(45) + sf::st_centroid(buf.sfc)
+  buf2 <- sf::st_set_geometry(buf1, buf.rotate)
+  buf2 <- projection_alignment(buf2, proj.info)
+  return(buf2)
+}
+
+
 #' Convert point/line infrastructure to spatial footprints
 #'
 #' \code{footprint_generation} is a helper function that converts point and line

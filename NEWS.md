@@ -7,6 +7,8 @@
     * `raster_to_zero()`
     * `gen_lcp_rd()`
     * `gen_linkage_rd()`
+    * `poly_rotate()`
+    * `pt_to_pad()`
 * Use `units` and `udunits2` packages to automate unit conversion.
 
 
