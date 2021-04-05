@@ -6,32 +6,32 @@
 \usage{
 inf_summary(
   out.df,
-  cpf.spdf,
-  sat.spdf,
-  rd.sl,
+  cpf.sf,
+  sat.sf,
+  rd.sf,
   surf.disturb,
   npra.file,
   zoi = 4000,
   wd.loc,
-  path.in
+  path.in,
+  proj.info
 )
 }
 \arguments{
-\item{out.df}{data.frame object containing the current scenario and iteration
+\item{out.df}{\code{data.frame} object containing the current scenario and iteration
 information. Created during the impact analysis by \code{\link{dia}}.}
 
-\item{cpf.spdf}{SpatialPointsDataFrame object indicating central processing
+\item{cpf.sf}{\code{sf POINT} object indicating central processing
 facility (CPF) locations. Created by \code{\link{generate_cpf}}.}
 
-\item{sat.spdf}{SpatialPointsDataFrame object indicating satellite production
+\item{sat.sf}{\code{sf POINT} object indicating satellite production
 facility locations. Created by \code{\link{generate_sat_rd}}.}
 
-\item{rd.sl}{SpatialLines object indicating gravel road centerlines. Created
+\item{rd.sf}{\code{sf LINESTRING} object indicating gravel road centerlines. Created
 by \code{\link{generate_sat_rd}}.}
 
-\item{surf.disturb}{SpatialPolygonsDataFrame object representing the combined
-footprint of central processing facilities (CPFs), satellite pads, and
-roads. Created by \code{\link{footprint_generation}}.}
+\item{surf.disturb}{\code{sf POLYGON} object representing the combined
+footprint of CPFs, satellite pads, and roads. Created by \code{\link{footprint_generation}}.}
 
 \item{npra.file}{Character string giving the file name of the NPR-A boundary
 shapefile, without extension.}
@@ -44,18 +44,21 @@ input and output data folders.}
 
 \item{path.in}{Character string identifying the relative path from the base
 directory (\code{wd.loc}) to where input data are stored.}
+
+\item{proj.info}{Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
+common to all spatial objects in the analysis.}
 }
 \value{
-\code{out.df} data.frame, updated to contain the infrastructure
+\code{out.df data.frame}, updated to contain the infrastructure
 summary results.
 }
 \description{
-Infrastructure summary analysis. This calculates the number of facilities/length
+\code{inf_summary} calculates the number of facilities/length
 of roads, area of direct surface disturbance, and area within 4 km of
-infrastructure for comarison with statistics provided by the Bureau of Land
+infrastructure for comparison with statistics provided by the Bureau of Land
 Management (BLM) in the Integrated Activity Plan Draft Environmental Impact
 Statement (IAP DEIS) for the National Petroleum Reserve - Alaska (NPR-A)
-(BLM 2019a). These metrics are added to the \code{out.df} data.frame.
+(BLM 2019a). These metrics are added to the \code{out.df data.frame}.
 }
 \references{
 BLM 2019a. National Petroleum Reserve in Alaska Draft Integrated
