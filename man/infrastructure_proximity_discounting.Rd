@@ -14,7 +14,7 @@ infrastructure_proximity_discounting(
   caribou.out = FALSE,
   proj.info,
   wd.loc,
-  path.out,
+  path.out = path.out,
   scenario,
   n.iter = 100,
   z = NULL,
@@ -22,19 +22,19 @@ infrastructure_proximity_discounting(
 )
 }
 \arguments{
-\item{x}{RasterLayer indicating the caribou calving RSF values, updated to
-set values overlapping the development footprint to zero. Created by
-\code{\link{infrastructure_overlap_to_zero}}.}
+\item{x}{\code{SpatRaster} object indicating the caribou calving RSF values,
+updated to set values overlapping the development footprint to zero. Created
+using \code{\link{raster_to_zero}}.}
 
-\item{surf.disturb}{SpatialPolygonsDataFrame object representing the combined
+\item{surf.disturb}{\code{sf POLYGON} object representing the combined
 footprint of central processing facilities (CPFs), satellite pads, and
 roads. Created by \code{\link{footprint_generation}}.}
 
-\item{quant}{Numerical value identifying the upper quartile of the calving
-RSF raster. Calculated by \code{\link{calc_highquality}}.}
+\item{quant}{Numerical value identifying the threshold for high-quality pixels of the calving
+RSF raster. Defaults to the upper quartile of values. Calculated by \code{\link{calc_highquality}}.}
 
 \item{wah.hq.weight}{Western Arctic Herd (WAH) caribou habitat overlap
-RasterLayer object (optional, unless analyses are being run for the WAH, in
+\code{SpatRaster} object (optional, unless analyses are being run for the WAH, in
 which case it is required).}
 
 \item{zoi}{Numeric value indicating the zone of influence (m) in which habitat

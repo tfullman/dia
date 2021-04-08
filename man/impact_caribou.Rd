@@ -26,28 +26,28 @@ impact_caribou(
 )
 }
 \arguments{
-\item{surf.disturb}{SpatialPolygonsDataFrame object representing the combined
+\item{surf.disturb}{\code{sf POLYGON} object representing the combined
 footprint of central processing facilities (CPFs), satellite pads, and
 roads. Created by \code{\link{footprint_generation}}.}
 
 \item{tch.raster}{Character string giving the file name of the Teshekpuk
-Caribou Herd (TCH) calving RasterLayer. Optional, allowing the analysis to
+Caribou Herd (TCH) calving raster. Optional, allowing the analysis to
 be run for only one herd.}
 
 \item{wah.raster}{Vector of two character strings, specifying the file names
-of the Western Arctic Herd (WAH) calving RasterLayer and weighted overlap
-RasterLayer, respectively. Optional, allowing the analysis to only be run
+of the Western Arctic Herd (WAH) calving raster and weighted overlap
+raster, respectively. Optional, allowing the analysis to only be run
 for one herd.}
 
-\item{tch.calving, wah.calving}{RasterLayer depicting the calving resource
+\item{tch.calving, wah.calving}{\code{SpatRaster} object(s) depicting the calving resource
 selection function (RSF) for the TCH and WAH, respectively. Optional,
 allowing the analysis to be run for only one herd.}
 
 \item{wah.hq.weight}{Western Arctic Herd (WAH) caribou habitat overlap
-RasterLayer object (optional, unless analyses are being run for the WAH, in
+\code{SpatRaster} object (optional, unless analyses are being run for the WAH, in
 which case it is required).}
 
-\item{out.df}{data.frame object containing the scenario information and
+\item{out.df}{\code{data.frame} object containing the scenario information and
 infrastructure summary. Created during the impact analysis by \code{\link{dia}}.}
 
 \item{wd.loc}{Character string identifying the base directory containing both
@@ -60,7 +60,7 @@ an "Output_Data" folder within the base folder.}
 \item{proj.info}{Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
 common to all spatial objects in the analysis.}
 
-\item{tch.hq, wah.hq}{data.frame object(s) created by \code{\link{calc_highquality}}.}
+\item{tch.hq, wah.hq}{\code{data.frame} object(s) created by \code{\link{calc_highquality}}.}
 
 \item{zoi}{Numeric value indicating the zone of influence (m) in which habitat
 quality is discounted. Defaults to 4000 m, following Wilson et al. (2013)
@@ -81,7 +81,7 @@ scenario being analyzed.}
 and impacts analyses in parallel, indicating the specific iteration being run.}
 }
 \value{
-\code{out.df} data.frame, updated to contain the caribou impact results.
+\code{out.df data.frame}, updated to contain the caribou impact results.
 }
 \description{
 \code{impact_caribou} runs the caribou impact analysis, discounting caribou

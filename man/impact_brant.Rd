@@ -10,21 +10,28 @@ impact_brant(
   land.dist = 2835.64,
   heli.disturb = 3570,
   proximity.effect = 100,
-  proj.info
+  proj.info,
+  brant.out = FALSE,
+  wd.loc,
+  path.out,
+  scenario,
+  z,
+  i,
+  n.iter
 )
 }
 \arguments{
-\item{brant.lakes}{SpatialPolygonsDataFrame object containing lake boundaries
+\item{brant.lakes}{\code{sf POLYGON} object containing lake boundaries
 with molting brant density data from Schults and Zeller (2019). Created in
 the data preparation code of \code{\link{dia}}.}
 
-\item{footprints}{List of SpatialPolygonsDataFrame objects, \code{cpf_footprints},
-\code{sat_footprints}, and \code{surf_disturb}, created by \code{\link{footprint_generation}}.}
+\item{footprints}{List of three \code{sf POLYGON} objects: \code{cpf_footprints},
+\code{sat_footprints}, and \code{surf_disturb}. Created by \code{\link{footprint_generation}}.}
 
-\item{land.dist}{Numeric value indicating the distance (m) from CPF or
-satellite pads at which helicopters are expected to be under 500 m altitude,
-based on a descent angle of 10 degrees following FAA guidelines. Used to
-determine helicopter impact area around CPFs and satellite pads. Defaults
+\item{land.dist}{Numeric value indicating the distance (m) from central processing
+facilities (CPFs) or satellite pads at which helicopters are expected to be under
+500 m altitude, based on a descent angle of 10 degrees following FAA guidelines. Used
+to determine helicopter impact area around CPFs and satellite pads. Defaults
 to 2835.64 m based on the assumption that a helicopter approaching a landing
 zone at a 10 degree descent angle reaches a 500 m altitude at \eqn{500m / tan(10 deg) = 2835.64 m}
 out from the landing zone.}
@@ -39,14 +46,39 @@ deposition). Defaults to 100 m as a conservative estimate.}
 
 \item{proj.info}{Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
 common to all spatial objects in the analysis.}
+
+\item{brant.out}{Logical indicator of whether a shapefile of the affected lakes should
+be written to \code{path.out}. Only written if any lakes are affected. Defaults to
+\code{FALSE}.}
+
+\item{wd.loc}{Character string identifying the base directory containing both
+input and output data folders.}
+
+\item{path.out}{Character string identifying the relative path from the base
+directory (\code{wd.loc}) to where output data will be saved. Defaults to
+an "Output_Data" folder within the base folder.}
+
+\item{scenario}{Character vector of strings identifying the scenarios to be run.}
+
+\item{z}{Iterator value used by \code{\link{dia}} to specify the development
+scenario being analyzed.}
+
+\item{i}{Iterator value used by \code{\link{dia}} to run development simulation
+and impacts analyses in parallel, indicating the specific iteration being run.}
+
+\item{n.iter}{Integer indicating the desired number of iterations to be run
+for each scenario. Defaults to 100.}
 }
 \value{
-\code{out.df} data.frame, updated to contain the brant impact results.
+Temporary \code{data.frame} containing the brant impact results. If
+\code{brant.out =TRUE}, then a shapefile of the affected lakes will also be written
+out, if any exist.
 }
 \description{
 \code{impact_brant} runs the brant impact analysis, calculating the area of
-expected brant disturbance based on physical infrastructure and helicopter
-overflights, then estimating the habitat area and number of brant affected.
+expected brant disturbance on molting lakes, based on physical infrastructure
+and helicopter overflights, then estimating the habitat area and number of brant
+affected.
 }
 \references{
 Jensen KC. 1990. Responses of molting Pacific black brant to

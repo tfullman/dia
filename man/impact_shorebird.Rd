@@ -4,22 +4,23 @@
 \alias{impact_shorebird}
 \title{Shorebird impact analysis}
 \usage{
-impact_shorebird(sb.stack, rd.sl, sb.df)
+impact_shorebird(sb.stack, rd.sf, sb.df)
 }
 \arguments{
-\item{sb.stack}{RasterStack of shorebird habitat suitability index (HSI) rasters,
-based on data from Saalfeld et al. (2013) and updated in the data preparation
-code of \code{\link{dia}}.}
+\item{sb.stack}{\code{SpatRaster} object with one layer for each shorebird habitat
+suitability index (HSI) raster, based on data from Saalfeld et al. (2013) that
+are loaded and combined in the data preparation code of \code{\link{dia}}.}
 
-\item{rd.sl}{SpatialLines object indicating gravel road centerlines. Created
+\item{rd.sf}{\code{sf LINESTRING} object indicating gravel road centerlines. Created
 by \code{\link{generate_sat_rd}}.}
 
-\item{sb.df}{data.frame containing the upper quantile of suitable high-quality
-habitat values and the number of high-quality suitable pixels in the input
-data. Created in the data preparation code of \code{\link{dia}}.}
+\item{sb.df}{\code{data.frame} containing the species-specific raster pixel threhsold
+values indicating high-quality suitable habitat (defaults to upper quantile of values)
+and the number of high-quality suitable pixels in the input data. Created in the
+data preparation code of \code{\link{dia}}.}
 }
 \value{
-\code{out.df} data.frame, updated to contain the shorebird impact results.
+Temporary \code{data.frame} containing the shorebird impact results.
 }
 \description{
 \code{impact_shorebird} runs the shorebird impact analysis, discounting

@@ -18,7 +18,8 @@ RasterLayer object with values of zero everywhere overlapped by
 \code{surf.disturb}.
 }
 \description{
-\code{infrastructure_overlap_to_zero} is a helper function for the caribou
-impact analysis (\code{\link{impact_caribou}}) that converts habitat values
-to 0 where they overlap the footprint of development.
+\strong{The \code{infrastructure_overlap_to_zero} is deprecated as of DIA version 0.2.0.
+Please use \code{\link{raster_to_zero}} instead.}   \code{infrastructure_overlap_to_zero}
+is a helper function for the caribou impact analysis (\code{\link{impact_caribou}})
+that converts habitat values to 0 where they overlap the footprint of development.
 }

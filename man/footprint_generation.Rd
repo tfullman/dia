@@ -5,9 +5,9 @@
 \title{Convert point/line infrastructure to spatial footprints}
 \usage{
 footprint_generation(
-  cpf.spdf,
-  sat.spdf,
-  rd.sl,
+  cpf.sf,
+  sat.sf,
+  rd.sf,
   proj.info,
   area.cpf = 100 * 4046.86,
   area.sat = 15 * 4046.86,
@@ -15,33 +15,34 @@ footprint_generation(
 )
 }
 \arguments{
-\item{cpf.spdf}{SpatialPointsDataFrame object indicating central processing
+\item{cpf.sf}{\code{sf POINT} object indicating central processing
 facility (CPF) locations. Created by \code{\link{generate_cpf}}.}
 
-\item{sat.spdf}{SpatialPointsDataFrame object indicating satellite production
+\item{sat.sf}{\code{sf POINT} object indicating satellite production
 facility locations. Created by \code{\link{generate_sat_rd}}.}
 
-\item{rd.sl}{SpatialLines object indicating gravel road centerlines. Created
+\item{rd.sf}{\code{SF LINESTRING} object indicating gravel road centerlines. Created
 by \code{\link{generate_sat_rd}}.}
 
 \item{proj.info}{Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
 common to all spatial objects in the analysis.}
 
 \item{area.cpf}{Numeric value indicating the average size (sq. m) of a CPF
-footprint. Default value estimated based on BLM (2019b).}
+footprint. Default value equates to 100 acres based on BLM (2019b).}
 
 \item{area.sat}{Numeric value indicating the average size (sq. m) of a
-satellite production facility footprint. Default value from BLM (2019a)
-p.B-6.}
+satellite production facility footprint. Default value equates to 15 acres based
+on BLM (2019a) p.B-6.}
 
 \item{road.width}{Numeric value indicating the estimated road ground
 footprint width (m). Default value based on BLM (2019a) p.B-6. See Fullman
 et al. (in press) for details.}
 }
 \value{
-List containing three SpatialPolygonsDataFrame objects:
-\code{cpf_footprints}, \code{sat_footprints}, and \code{surf_disturb}, which
-contains the combined footprint of CPFs, satellite pads, and roads.
+List containing three \code{sf POLYGON} objects: \code{cpf_footprints},
+\code{sat_footprints}, and \code{surf_disturb}, which contain the CPF footprints,
+satellite pad footprints, and combined footprint of CPFs, satellite pads, and roads,
+respectively.
 }
 \description{
 \code{footprint_generation} is a helper function that converts point and line

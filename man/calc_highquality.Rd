@@ -4,14 +4,21 @@
 \alias{calc_highquality}
 \title{Calculate quantiles and identify high-quality pixels for species raster}
 \usage{
-calc_highquality(x, y = NULL, z = NULL, wah = FALSE, sb = FALSE)
+calc_highquality(
+  x,
+  y = NULL,
+  z = NULL,
+  wah = FALSE,
+  sb = FALSE,
+  hq.quant = 0.75
+)
 }
 \arguments{
 \item{x}{A caribou calving resource selection function (RSF) or shorebird
-habitat suitability index (HSI) RasterLayer object.}
+habitat suitability index (HSI) \code{SpatRaster} object.}
 
 \item{y}{Western Arctic Herd (WAH) caribou habitat overlap weighting
-RasterLayer object (optional).}
+\code{SpatRaster} object (optional).}
 
 \item{z}{Numeric value indicating the species-specific threshold value
 defining shorebird suitable habitat from habitat suitability values (from
@@ -23,11 +30,15 @@ the additional weighting analysis. Defaults to \code{FALSE}.}
 \item{sb}{Logical indicator of whether the run is for a shorebird. If so,
 adds a calculation of suitable habitat before calculating quantiles.
 Defaults to \code{FALSE}.}
+
+\item{hq.quant}{Numeric value between 0-1 that indicates the quantile value that
+reflects high-quality habitat. Defaults to 0.75, following Johnson et al. (2005).}
 }
 \value{
-data.frame object containing the 75\% quantile value (\code{quant75}),
-number of high-quality pixels in the input raster (\code{highquality.orig}),
-and (if \code{wah = TRUE}) the weighted high-quality value (\code{highquality.weighted}).
+\code{data.frame} object containing the raster pixel value denoting
+high-quality habitat according to the desired quantile value (\code{quant_hq}),
+number of high-quality pixels in the input raster (\code{highquality_orig}),
+and (if \code{wah = TRUE}) the weighted high-quality value (\code{highquality_weighted}).
 }
 \description{
 \code{calc_highquality} is a helper function that prepares input data for the
