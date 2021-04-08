@@ -10,6 +10,12 @@
     * `poly_rotate()`
     * `pt_to_pad()`
 * Use `units` and `udunits2` packages to automate unit conversion.
+* Adds more user options for `dia`:
+  * Specify high-quality habitat threshold
+  * Make writing out shapefiles optional
+  * Add ability to easily change values for `area.cpf`, `area.sat`, and `road.width`
+  * Write out shapefile of affected brant molting lakes, if any
+* Switch `beepr` from Imports to Suggests.
 
 
 # dia 0.1.0

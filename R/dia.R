@@ -34,7 +34,7 @@
 #'   pad. Defaults to 6437.4 m, similar to what is seen in BLM (2019b).
 #' @param n.sat Desired number of satellite pads per CPF. This can either be fixed
 #'   or a range, \code{c(min,max)}, from which a random value will be drawn for
-#'   each iteration using a uniform distribution. Defaults to \code{c(4, 8)}
+#'   each iteration using a uniform distribution. Defaults to \code{c(4,8)}
 #'   satellites per CPF.
 #' @param rd.exist.file Character string indicating the file name for the shapefile
 #'   depicting existing roads as lines. Optional, allowing the code to be run
@@ -115,9 +115,20 @@
 #'   shapefile, without file extension. Optional, allowing the analysis to be run
 #'   without brant analyses or without any impact analyses. Failure to specify
 #'   this means the brant impact analysis will not be run.
+#' @param hq.quant Numeric value between 0-1 that indicates the pixel value that
+#'   reflects high-quality habitat. Defaults to 0.75, following Johnson et al. (2005)'s
+#'   use of the upper quartile to represent high-quality habitat.
 #' @param zoi Numeric value indicating the zone of influence (m) for calculation
 #'   of the surface disturbance buffer and caribou displacement. Defaults to
 #'   4000 m, following Cameron et al. (2005) and Wilson et al. (2013).
+#' @param area.cpf Numeric value indicating the average size (sq. m) of a CPF
+#'   footprint. Default value equates to 100 acres based on BLM (2019b).
+#' @param area.sat Numeric value indicating the average size (sq. m) of a
+#'   satellite production facility footprint. Default value equates to 15 acres based
+#'   on BLM (2019a) p.B-6.
+#' @param road.width Numeric value indicating the estimated road ground
+#'   footprint width (m). Default value based on BLM (2019a) p.B-6. See Fullman
+#'   et al. (in press) for details.
 #' @param land.dist Numeric value indicating the distance (m) from CPF or
 #'   satellite pads at which helicopters are expected to be under 500 m altitude,
 #'   based on a descent angle of 10 degrees following FAA guidelines. Used to
@@ -132,16 +143,24 @@
 #'   birds are disturbed by infrastructure proximity effects (e.g., dust
 #'   deposition). Defaults to 100 m as a conservative estimate.
 #' @param proj.info Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
-#'   common to all spatial objects in the analysis.
+#'   common to all spatial objects in the analysis. Defaults to the NAD83 2011 Alaska
+#'   Albers projection (\code{EPSG:6393}).
 #' @param path.in Character string identifying the relative path from the base
 #'   directory (\code{wd.loc}) to where input data are stored. Defaults to an
 #'   "Input_Data" folder within the base folder.
 #' @param path.out Character string identifying the relative path from the base
 #'   directory (\code{wd.loc}) to where output data will be saved. Defaults to
 #'   an "Output_Data" folder within the base folder.
+#' @param shp.out Logical indicator of whether infrastructure created if
+#'   \code{simulate.in = TRUE} should be written out as shapefiles to \code{path.out}.
+#'   If so, three shapefiles will be written, one each for CPFs, satellite pads, and
+#'   roads. Defaults to \code{TRUE}.
 #' @param caribou.out Logical indicator of whether the resulting discounted
 #'   caribou RSF raster(s) should be written out. Defaults to \code{FALSE}.
-#' @param suppress.rgdal.proj4.warnings Logical indicator of whether \href{https://cran.r-project.org/web/packages/rgdal/index.html}{rgdal}
+#' @param brant.out Logical indicator of whether a shapefile of the affected lakes should
+#'   be written to \code{path.out}. Only written if any lakes are affected. Defaults to
+#'   \code{FALSE}.
+#' @param suppress.rgdal.proj4.warnings Logical indicator of whether \href{https://cran.r-project.org/package=rgdal}{rgdal}
 #'   warnings about discarded datums in coordinate reference system definitions
 #'   should be suppressed. These are simply to warn developers about the switch
 #'   from \code{proj4string} to \code{WKT CRS} specification, but generate many
@@ -158,16 +177,19 @@
 #' @param completion.sound Indication of whether the computer should make a sound
 #'   when the model run is complete and, if so, which sound to play. Defaults to
 #'   no sound (\code{NULL}). Valid inputs are integers corresponding to the sound
-#'   argument options for \code{\link[beepr]{beep}}.
+#'   argument options for \code{\link[beepr]{beep}}. If \code{!is.null(completion.sound)},
+#'   then the \href{https://cran.r-project.org/package=beepr}{beepr} package must be
+#'   installed.
 #'
-#' @details Prior to running \code{dia} the user must create a \code{path.out/RData}
-#'   folder to contain output results. Failure to do this will result in an error.
+#' @details The \code{dia} code assumes there is a \code{path.out/RData}
+#'   folder to contain output results. If this does not exist, it will be created by
+#'   the \code{dia} function.
 #'
 #'   \code{dia} is set up to address discrepancies in spatial object
 #'   projection, but is not designed to deal with misaligned extent or cell size of
-#'   Raster* input data. Prior to using \code{dia}, the user should perform
+#'   \code{SpatRaster} input data. Prior to using \code{dia}, the user should perform
 #'   initial preparation to ensure any raster files have the same extent and
-#'   resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/web/packages/raster/index.html}{raster}
+#'   resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/package=terra}{terra}
 #'   package.
 #'
 #'   To speed up analyses, code is run in parallel. However, infrastructure
@@ -179,12 +201,12 @@
 #'   further testing is needed and this may vary widely across systems and configurations.
 #'
 #' @return Nothing is directly returned by \code{dia}. However, if \code{simulate.inf
-#'   = TRUE} then .csv files, shapefiles, and an .RData file containing the results
-#'   of the infrastructure simulation will be written to \code{path.out}. If any
-#'   of the species impact analyses are run, a .csv file containing the
-#'   infrastructure summary and species-specific impact results will be written
-#'   to path.out. Regardless, the run times for each iteration are saved in an
-#'   .RData file and the overall model run time is saved as a .csv file.
+#'   = TRUE} then .csv files, shapefiles (if \code{shp.out = TRUE}), and an .RData file
+#'   containing the results of the infrastructure simulation will be written to
+#'   \code{path.out}. If any of the species impact analyses are run, a .csv file
+#'   containing the infrastructure summary and species-specific impact results will be
+#'   written to \code{path.out}. Regardless, the run times for each iteration are saved
+#'   in an .RData file and the overall model run time is saved as a .csv file.
 #' @importFrom doRNG %dorng%
 #' @importFrom foreach %dopar%
 #' @export
@@ -213,6 +235,10 @@
 #' Jensen KC. 1990. Responses of molting Pacific black brant to
 #'   experimental aircraft disturbance in the Teshekpuk Lake Special Area, Alaska.
 #'   Ph.D. Thesis, Texas A&M University. College Station, TX, USA.
+#'
+#' Johnson CJ, Boyce MS, Ray CL, Cluff DH, Gau RJ, Gunn A, Mulders R. 2005.
+#'   Cumulative effects of human developments on arctic wildlife. Wildlife
+#'   Monographs 160:1-36.
 #'
 #' Miller MW, Jensen KC, Grant WE, Weller MW. 1994. A simulation model of
 #'   helicopter disturbance of molting Pacific black brant. Ecological Modelling
@@ -250,9 +276,10 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
                 oil.av.file = NULL, cost.map.file = NULL, pad.res.files = NULL, road.res.files = NULL,
                 alt.b.rd.stranded.res.file = NULL, alt.b.stranded.lease.file = NULL, alt.c.row.file = NULL,
                 alt.d.north.file = NULL, npra.file = NULL, tch.raster = NULL, wah.raster = NULL, shorebird.raster = NULL,
-                shorebird.threshold = NULL, brant.shp = NULL, zoi = 4000, land.dist = 2835.64, heli.disturb = 3570,
-                proximity.effect = 100, proj.info = "EPSG:6393", path.in = "Input_Data", path.out = "Output_Data",
-                caribou.out = FALSE, suppress.rgdal.proj4.warnings = TRUE, n.cores = parallel::detectCores(),
+                shorebird.threshold = NULL, brant.shp = NULL, hq.quant = 0.75, zoi = 4000, area.cpf = 100 * 4046.86,
+                area.sat = 15 * 4046.86, road.width = 18.85953, land.dist = 2835.64, heli.disturb = 3570,
+                proximity.effect = 100, proj.info = "EPSG:6393", path.in = "Input_Data", path.out = "Output_Data", shp.out = TRUE,
+                caribou.out = FALSE, brant.out = FALSE, suppress.rgdal.proj4.warnings = TRUE, n.cores = parallel::detectCores(),
                 debug.out = FALSE, completion.sound = NULL){
 
 
@@ -272,8 +299,7 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
   if(simulate.inf){
     ## Prepare general inputs
     gen.inputs <- prep_general_inputs(rd.exist.file = rd.exist.file, pad.exist.file = pad.exist.file,
-                                      oil.av.file = oil.av.file, cost.map.file = cost.map.file, d2cpf = d2cpf, wd.loc = wd.loc,
-                                      path.in = path.in, proj.info = proj.info)
+                                      oil.av.file = oil.av.file, d2cpf = d2cpf, wd.loc = wd.loc, path.in = path.in, proj.info = proj.info)
   }
 
 
@@ -287,7 +313,7 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
     tch.calving <- load_spatial(x=tch.raster, proj.info=proj.info, wd.loc=wd.loc, path.in=path.in)
 
     ## Calculate the number of high-quality calving pixels (sensu Johnson et al. 2005).
-    tch.hq <- calc_highquality(tch.calving)
+    tch.hq <- calc_highquality(tch.calving, hq.quant=hq.quant)
   }
 
   ## Prep WAH data, if needed
@@ -297,7 +323,7 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
     wah.hq.weight <- load_spatial(x=wah.raster[2], proj.info=proj.info, wd.loc=wd.loc, path.in=path.in)
 
     ## Calculate the number of high-quality calving pixels (sensu Johnson et al. 2005).
-    wah.hq <- calc_highquality(x=wah.calving, y=wah.hq.weight, wah=TRUE)
+    wah.hq <- calc_highquality(x=wah.calving, y=wah.hq.weight, wah=TRUE, hq.quant=hq.quant)
   }
 
 
@@ -315,13 +341,13 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
 
       ## Ensure the correct projection and determine suitabile and high-quality suitable pixels,
       ## returning the number of high-quality suitable pixels.
-      sb.hq <- calc_highquality(x=sb.hsi, z=shorebird.threshold[ii], sb=TRUE)
+      sb.hq <- calc_highquality(x=sb.hsi, z=shorebird.threshold[ii], sb=TRUE, hq.quant=hq.quant)
 
       ## Create a temporary data.frame containing the high-quality habitat information and a blank to
       ## be filled with the impact results. This code assumes that the shorebird raster names each start
       ## with the four-letter species code.
-      sb.df.tmp <- data.frame("sp"=substr(shorebird.raster[ii], start=1, stop=4), "quant75"=sb.hq$quant75,
-                              "hq_orig"=sb.hq$highquality.orig, "hq_discount"=NA, "hq_remaining"=NA)
+      sb.df.tmp <- data.frame("sp"=substr(shorebird.raster[ii], start=1, stop=4), "quant_hq"=sb.hq$quant_hq,
+                              "hq_orig"=sb.hq$highquality_orig, "hq_discount"=NA, "hq_remaining"=NA)
 
       ## Add the individual species data.frame to a combined shorebird data.frame and the HSI raster to
       ## a combined shorebird raster stack
@@ -330,7 +356,7 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
         sb.stack <- sb.hsi
       } else{
         sb.df <- rbind(sb.df, sb.df.tmp)
-        sb.stack <- raster::stack(sb.stack, sb.hsi)
+        sb.stack <- c(sb.stack, sb.hsi)
       }
     }
   }
@@ -346,7 +372,8 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
     brant.lakes <- load_spatial(x=brant.shp, proj.info=proj.info, wd.loc=wd.loc, path.in=path.in, vec=TRUE)
 
     ## Buffer by zero to avoid typology issues.
-    brant.lakes <- rgeos::gBuffer(brant.lakes, byid=TRUE, width=0)
+    brant.lakes <- rgeos::gBuffer(sf::as_Spatial(brant.lakes), byid=TRUE, width=0)
+    brant.lakes <- sf::st_as_sf(brant.lakes)
   }
 
 
@@ -360,11 +387,10 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
 
     ## Prepare the scenario-specific inputs
     scen.inputs <- prep_scenario_inputs(scenario = scenario, oil.av = gen.inputs$oil_av,
-                                        cost.map = gen.inputs$cost_map, cost.water = gen.inputs$cost_water, willow.cpf.ras = gen.inputs$willow_cpf_ras,
-                                        pad.res.file = pad.res.files[z], road.res.file = road.res.files[z],
-                                        alt.b.rd.stranded.res.file = alt.b.rd.stranded.res.file, alt.b.stranded.lease.file = alt.b.stranded.lease.file,
-                                        alt.c.row.file = alt.c.row.file, alt.d.north.file = alt.d.north.file, wd.loc = wd.loc,
-                                        path.in = path.in, proj.info = proj.info, z = z)
+                                        cost.map.file = cost.map.file, willow.cpf.ras = gen.inputs$willow_cpf_ras, pad.res.file = pad.res.files[z],
+                                        road.res.file = road.res.files[z], alt.b.rd.stranded.res.file = alt.b.rd.stranded.res.file,
+                                        alt.b.stranded.lease.file = alt.b.stranded.lease.file, alt.c.row.file = alt.c.row.file,
+                                        alt.d.north.file = alt.d.north.file, wd.loc = wd.loc, path.in = path.in, proj.info = proj.info, z = z)
 
     ## Set things up to run in parallel.
     cl <- parallel::makeCluster(n.cores)
@@ -372,113 +398,119 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
 
     ## Run the infrastructure simulation and/or impact analysis in parallel.
     iter.run.times <- foreach::foreach(i = 1:n.iter, .packages=c("raster", "gdistance", "spatstat", "maptools", "sp",
-                                                                 "rgeos", "rgdal"), .export= c("footprint_generation", "generate_cpf", "generate_sat_rd",
-                                                                                               "impact_brant", "impact_caribou", "impact_shorebird", "inf_summary", "infrastructure_exclusion_buffer",
-                                                                                               "infrastructure_overlap_to_zero", "infrastructure_proximity_discounting", "infrastructure_spacer",
-                                                                                               "lcp_rds_infield", "lcp_rds_outfield", "projection_alignment"),
-                                       .inorder=FALSE) %dorng% {
-                                         indiv.start <- Sys.time()
+                                                                 "rgeos", "rgdal", "sf", "terra", "units", "udunits2"), .export=c("footprint_generation", "gen_lcp_rd",
+                                                                                                                                  "gen_linkage_rd", "generate_cpf", "generate_sat_rd", "impact_brant", "impact_caribou", "impact_shorebird",
+                                                                                                                                  "inf_summary", "infrastructure_exclusion_buffer", "infrastructure_proximity_discounting",
+                                                                                                                                  "infrastructure_spacer", "lcp_rds_infield", "lcp_rds_outfield", "poly_rotate", "projection_alignment",
+                                                                                                                                  "pt_to_pad", "raster_to_zero"), .inorder=FALSE) %dorng% {
+                                                                                                                                    indiv.start <- Sys.time()
 
-                                         #########################################
-                                         ## Simulate infrastructure, if desired ##
-                                         #########################################
+                                                                                                                                    #########################################
+                                                                                                                                    ## Simulate infrastructure, if desired ##
+                                                                                                                                    #########################################
 
-                                         if(simulate.inf){
-                                           ## Generate CPF location(s)
-                                           cpf.iter <- generate_cpf(oil.im = scen.inputs$oil_im, n.cpf = n.cpf, d2cpf = d2cpf,
-                                                                    debug.out = debug.out, wd.loc = wd.loc, path.out = path.out, n.iter = n.iter,
-                                                                    proj.info = proj.info, scenario = scenario, z = z, i = i)
+                                                                                                                                    if(simulate.inf){
+                                                                                                                                      ## Generate CPF location(s)
+                                                                                                                                      cpf.iter <- generate_cpf(pad.im = scen.inputs$pad_im, n.cpf = n.cpf, d2cpf = d2cpf,
+                                                                                                                                                               debug.out = debug.out, wd.loc = wd.loc, path.out = path.out, n.iter = n.iter,
+                                                                                                                                                               proj.info = proj.info, scenario = scenario, z = z, i = i)
 
-                                           ## Generate satellite pads and roads for each CPF, including connecting to existing
-                                           ## infrastructure
-                                           satrd.iter <- generate_sat_rd(cpf.df = cpf.iter$cpf_df, cpf.sp = cpf.iter$cpf_sp,
-                                                                         pad.exist = gen.inputs$pad_exist, exist.coords = gen.inputs$exist_coords,
-                                                                         oil.av.res = scen.inputs$oil_av, alt.b.stranded.leases = scen.inputs$alt_B_stranded_leases,
-                                                                         tr.cost.alt.c.row = scen.inputs$tr_cost_C_row, alt.d.TLnorth = scen.inputs$alt_D_north,
-                                                                         tr.cost.alt = scen.inputs$tr_cost_alt, cost.map = gen.inputs$cost_map,
-                                                                         road.res = scen.inputs$road_res, rd.exist = gen.inputs$rd_exist,
-                                                                         tr.cost.alt.b.stranded = scen.inputs$tr_cost_B_stranded,
-                                                                         maxd2sat = maxd2sat, mind2sat = mind2sat, n.sat = n.sat,
-                                                                         n.iter = n.iter, wd.loc = wd.loc, path.out = path.out, proj.info = proj.info,
-                                                                         scenario = scenario, debug.out = debug.out, z = z, i = i)
+                                                                                                                                      ## Generate satellite pads and roads for each CPF, including connecting to existing
+                                                                                                                                      ## infrastructure
+                                                                                                                                      satrd.iter <- generate_sat_rd(cpf.df = cpf.iter$cpf_df, cpf.sf = cpf.iter$cpf_sf,
+                                                                                                                                                                    pad.exist = gen.inputs$pad_exist, exist.coords = gen.inputs$exist_coords,
+                                                                                                                                                                    pad.prob = scen.inputs$pad_prob, alt.b.stranded.leases = scen.inputs$alt_B_stranded_leases,
+                                                                                                                                                                    tr.cost.alt.c.row = scen.inputs$tr_cost_C_row, alt.d.TLnorth = scen.inputs$alt_D_north,
+                                                                                                                                                                    tr.cost.alt = scen.inputs$tr_cost_alt, road.res = scen.inputs$road_res,
+                                                                                                                                                                    rd.exist = gen.inputs$rd_exist, tr.cost.alt.b.stranded = scen.inputs$tr_cost_B_stranded,
+                                                                                                                                                                    maxd2sat = maxd2sat, mind2sat = mind2sat, n.sat = n.sat, n.iter = n.iter, wd.loc = wd.loc,
+                                                                                                                                                                    path.out = path.out, proj.info = proj.info, scenario = scenario, debug.out = debug.out, z = z,
+                                                                                                                                                                    i = i)
 
-                                           ## Add the Willow CPF to the cpf.sp object
-                                           cpf.spdf <- rbind(gen.inputs$willow_spdf, sp::SpatialPointsDataFrame(cpf.iter$cpf_sp, data=cpf.iter$cpf_df))
+                                                                                                                                      ## Add the Willow CPF to the cpf.sf object
+                                                                                                                                      cpf.sf <- rbind(gen.inputs$willow_cpf[,c("cpf", "geometry")], cpf.iter$cpf_sf)
 
-                                           ## Save off the infrastructure data
-                                           utils::write.csv(cpf.iter$cpf_df, file=paste(wd.loc, "/", path.out, "/CPF_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
-                                           utils::write.csv(satrd.iter$sat_df, file=paste(wd.loc, "/", path.out, "/Satellite_pad_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
-                                           utils::write.csv(satrd.iter$rd_df, file=paste(wd.loc, "/", path.out, "/Road_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
-                                           rgdal::writeOGR(obj=sp::SpatialLinesDataFrame(satrd.iter$rd_sl, data=data.frame(id=names(satrd.iter$rd_sl), row.names=names(satrd.iter$rd_sl))), dsn=paste(wd.loc, path.out, sep="/"), layer=paste("Road_shapefile_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), sep=""), driver="ESRI Shapefile")
-                                           rgdal::writeOGR(obj=cpf.spdf, dsn=paste(wd.loc, path.out, sep="/"), layer=paste("CPF_shapefile_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), sep=""), driver="ESRI Shapefile")
-                                           rgdal::writeOGR(obj=satrd.iter$sat_spdf, dsn=paste(wd.loc, path.out, sep="/"), layer=paste("Satellite_shapefile_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), sep=""), driver="ESRI Shapefile")
-                                           cpf.df <- cpf.iter$cpf_df
-                                           sat.df <- satrd.iter$sat_df
-                                           rd.df <- satrd.iter$rd_df
-                                           sat.spdf <- satrd.iter$sat_spdf
-                                           rd.sl <- satrd.iter$rd_sl
-                                           save(cpf.df, sat.df, rd.df, cpf.spdf, sat.spdf, rd.sl, file=paste(wd.loc, "/", path.out, "/RData/", "DIA_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".RData", sep=""))
-                                         }
+                                                                                                                                      ## Save off the infrastructure data
+                                                                                                                                      utils::write.csv(cpf.iter$cpf_df, file=paste(wd.loc, "/", path.out, "/CPF_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
+                                                                                                                                      utils::write.csv(satrd.iter$sat_df, file=paste(wd.loc, "/", path.out, "/Satellite_pad_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
+                                                                                                                                      utils::write.csv(satrd.iter$rd_df, file=paste(wd.loc, "/", path.out, "/Road_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
+                                                                                                                                      if(shp.out){
+                                                                                                                                        sf::st_write(satrd.iter$rd_sf, dsn=paste(wd.loc, path.out, sep="/"), layer=paste("Road_shapefile_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), sep=""), driver="ESRI Shapefile")
+                                                                                                                                        sf::st_write(cpf.sf, dsn=paste(wd.loc, path.out, sep="/"), layer=paste("CPF_shapefile_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), sep=""), driver="ESRI Shapefile")
+                                                                                                                                        sf::st_write(satrd.iter$sat_sf, dsn=paste(wd.loc, path.out, sep="/"), layer=paste("Satellite_shapefile_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), sep=""), driver="ESRI Shapefile")
+                                                                                                                                      }
+                                                                                                                                      cpf.df <- cpf.iter$cpf_df
+                                                                                                                                      sat.df <- satrd.iter$sat_df
+                                                                                                                                      rd.df <- satrd.iter$rd_df
+                                                                                                                                      sat.sf <- satrd.iter$sat_sf
+                                                                                                                                      rd.sf <- satrd.iter$rd_sf
+                                                                                                                                      ## Check whether the output csv folder exists. If not, create it.
+                                                                                                                                      dir.create(paste(wd.loc, "/", path.out, "/RData", sep=""), showWarnings=FALSE)
+                                                                                                                                      ## Save an .RData file for easier access and reuse
+                                                                                                                                      save(cpf.df, sat.df, rd.df, cpf.sf, sat.sf, rd.sf, file=paste(wd.loc, "/", path.out, "/RData/", "DIA_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".RData", sep=""))
+                                                                                                                                    }
 
-                                         ##################################
-                                         ## Impacts analyses, if desired ##
-                                         ##################################
+                                                                                                                                    ##################################
+                                                                                                                                    ## Impacts analyses, if desired ##
+                                                                                                                                    ##################################
 
-                                         ## If any species-specific impact analysis is to be run:
-                                         if(!is.null(tch.raster) || !is.null(wah.raster) || !is.null(shorebird.raster) || !is.null(brant.shp)){
-                                           ## If infrastructure simulation was not run above, identify and load the
-                                           ## previously-generated infrastructure data for the given scenario and iteration.
-                                           if(simulate.inf == FALSE){
-                                             inf.file <- list.files(path=paste(wd.loc, path.out, "RData", sep="/"), pattern=paste("^DIA_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), ".*RData$", sep=""), full.names=TRUE)
-                                             load(inf.file)
-                                           }
+                                                                                                                                    ## Create an empty output results summary data.frame
+                                                                                                                                    out.df <- data.frame(scenario=scenario[z], iteration=i)
 
-                                           ## Create an empty output results summary data.frame
-                                           out.df <- data.frame(scenario=scenario[z], iteration=i, tch_discount=NA, tch_remaining=NA,
-                                                                wah_discount=NA, wah_remaining=NA)
+                                                                                                                                    ## If any species-specific impact analysis is to be run:
+                                                                                                                                    if(!is.null(tch.raster) || !is.null(wah.raster) || !is.null(shorebird.raster) || !is.null(brant.shp)){
+                                                                                                                                      ## If infrastructure simulation was not run above, identify and load the
+                                                                                                                                      ## previously-generated infrastructure data for the given scenario and iteration.
+                                                                                                                                      if(simulate.inf == FALSE){
+                                                                                                                                        inf.file <- list.files(path=paste(wd.loc, path.out, "RData", sep="/"), pattern=paste("^DIA_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), ".*RData$", sep=""), full.names=TRUE)
+                                                                                                                                        load(inf.file)
+                                                                                                                                      }
 
-                                           ## Convert the simulated infrastructure locations to a surface disturbance footprint
-                                           footprints <- footprint_generation(cpf.spdf=cpf.spdf, sat.spdf=sat.spdf, rd.sl=rd.sl, proj.info=proj.info)
+                                                                                                                                      ## Convert the simulated infrastructure locations to a surface disturbance footprint
+                                                                                                                                      footprints <- footprint_generation(cpf.sf=cpf.sf, sat.sf=sat.sf, rd.sf=rd.sf, proj.info=proj.info,
+                                                                                                                                                                         area.cpf=area.cpf, area.sat=area.sat, road.width=road.width)
 
-                                           ## Calculate infrastructure summary statistics
-                                           out.df <- inf_summary(out.df=out.df, cpf.spdf=cpf.spdf, sat.spdf=sat.spdf, rd.sl=rd.sl,
-                                                                 surf.disturb=footprints$surf_disturb, npra.file=npra.file, zoi=zoi, wd.loc=wd.loc, path.in=path.in)
+                                                                                                                                      ## Calculate infrastructure summary statistics
+                                                                                                                                      out.df <- inf_summary(out.df=out.df, cpf.sf=cpf.sf, sat.sf=sat.sf, rd.sf=rd.sf,
+                                                                                                                                                            surf.disturb=footprints$surf_disturb, npra.file=npra.file, zoi=zoi, wd.loc=wd.loc, path.in=path.in,
+                                                                                                                                                            proj.info=proj.info)
 
-                                           ## Run the desired species-specific impact analyses
-                                           if(!is.null(tch.raster) || !is.null(wah.raster)){
-                                             out.df <- impact_caribou(surf.disturb=footprints$surf_disturb, tch.raster=tch.raster,
-                                                                      wah.raster=wah.raster, tch.calving=tch.calving, wah.calving=wah.calving,
-                                                                      wah.hq.weight=wah.hq.weight, out.df=out.df, wd.loc=wd.loc, path.out=path.out,
-                                                                      proj.info=proj.info, tch.hq=tch.hq, wah.hq=wah.hq, zoi=zoi, caribou.out=caribou.out,
-                                                                      scenario=scenario, n.iter=n.iter, z=z, i=i)
-                                           }
+                                                                                                                                      ## Run the desired species-specific impact analyses
+                                                                                                                                      if(!is.null(tch.raster) || !is.null(wah.raster)){
+                                                                                                                                        out.df <- impact_caribou(surf.disturb=footprints$surf_disturb, tch.raster=tch.raster,
+                                                                                                                                                                 wah.raster=wah.raster, tch.calving=tch.calving, wah.calving=wah.calving,
+                                                                                                                                                                 wah.hq.weight=wah.hq.weight, out.df=out.df, wd.loc=wd.loc, path.out=path.out,
+                                                                                                                                                                 proj.info=proj.info, tch.hq=tch.hq, wah.hq=wah.hq, zoi=zoi, caribou.out=caribou.out,
+                                                                                                                                                                 scenario=scenario, n.iter=n.iter, z=z, i=i)
+                                                                                                                                      }
 
-                                           if(!is.null(shorebird.raster)){
-                                             sb.df <- impact_shorebird(sb.stack=sb.stack, rd.sl=rd.sl, sb.df=sb.df)
-                                             col.tmp <- ncol(out.df)
-                                             out.df <- cbind(out.df, t(sb.df$hq_discount), t(sb.df$hq_remaining))
-                                             names(out.df)[(col.tmp+1):ncol(out.df)] <- c(paste(sb.df$sp, "discount", sep="_"), paste(sb.df$sp, "remaining", sep="_"))
-                                           }
+                                                                                                                                      if(!is.null(shorebird.raster)){
+                                                                                                                                        sb.df <- impact_shorebird(sb.stack=sb.stack, rd.sf=rd.sf, sb.df=sb.df)
+                                                                                                                                        col.tmp <- ncol(out.df)
+                                                                                                                                        out.df <- cbind(out.df, t(sb.df$hq_discount), t(sb.df$hq_remaining))
+                                                                                                                                        names(out.df)[(col.tmp+1):ncol(out.df)] <- c(paste(sb.df$sp, "discount", sep="_"), paste(sb.df$sp, "remaining", sep="_"))
+                                                                                                                                      }
 
-                                           if(!is.null(brant.shp)){
-                                             brant.df <- impact_brant(brant.lakes=brant.lakes, footprints=footprints, land.dist=land.dist, heli.disturb=heli.disturb, proximity.effect=proximity.effect, proj.info=proj.info)
-                                             out.df <- cbind(out.df, brant.df)
-                                           }
-                                         }
+                                                                                                                                      if(!is.null(brant.shp)){
+                                                                                                                                        brant.df <- impact_brant(brant.lakes=brant.lakes, footprints=footprints, land.dist=land.dist,
+                                                                                                                                                                 heli.disturb=heli.disturb, proximity.effect=proximity.effect, proj.info=proj.info,
+                                                                                                                                                                 brant.out=brant.out, wd.loc=wd.loc, path.out=path.out, scenario=scenario, z=z, i=i,
+                                                                                                                                                                 n.iter=n.iter)
+                                                                                                                                        out.df <- cbind(out.df, brant.df)
+                                                                                                                                      }
+                                                                                                                                    }
 
-                                         ## Include the individual run time in the output. If out.df does not exist because the impact
-                                         ## analysis was not run, create it first.
-                                         if(!exists("out.df")) out.df <- data.frame(scenario=scenario[z], iteration=i)
-                                         indiv.run.time <- Sys.time() - indiv.start
-                                         out.df$run_time <- as.numeric(indiv.run.time)
-                                         out.df$run_units <- units(indiv.run.time)
+                                                                                                                                    ## Include the individual run time in the output
+                                                                                                                                    indiv.run.time <- Sys.time() - indiv.start
+                                                                                                                                    out.df$run_time <- as.numeric(indiv.run.time)
+                                                                                                                                    out.df$run_units <- units(indiv.run.time)
 
-                                         ## Write out the results
-                                         utils::write.csv(out.df, file=paste(wd.loc, "/", path.out, "/Scenario_impact_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
+                                                                                                                                    ## Write out the results
+                                                                                                                                    utils::write.csv(out.df, file=paste(wd.loc, "/", path.out, "/Scenario_impact_data_", scenario[z], "_iter_", formatC(i, width=nchar(n.iter), format="d", flag="0"), "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
 
-                                         ## Return the run time as the output of the parallelization
-                                         return(list(iter=i, time=indiv.run.time))
-                                       }
+                                                                                                                                    ## Return the run time as the output of the parallelization
+                                                                                                                                    return(list(iter=i, time=indiv.run.time))
+                                                                                                                                  }
 
     ## Close the cluster, save summaries, record run timing for the scenario.
     parallel::stopCluster(cl)
@@ -486,6 +518,12 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
     scenario.run.time <- Sys.time()- scenario.start
     scenario.df <- data.frame(scenario=scenario[z], run_time=as.numeric(scenario.run.time), run_units=units(scenario.run.time))
     utils::write.csv(scenario.df, file=paste(wd.loc, "/", path.out, "/Scenario_run_time_", scenario[z], "_", Sys.Date(), ".csv", sep=""), row.names=FALSE)
-    if(!is.null(completion.sound)) beepr::beep(completion.sound); Sys.sleep(2); beepr::beep(completion.sound); Sys.sleep(2); beepr::beep(completion.sound)
+    if(!is.null(completion.sound)){
+      if(!requireNamespace("beepr", quietly=TRUE)){
+        warning("Package \"beepr\" not installed. No sound was made at model completion. To have the model play a sound, please install \"beepr\".", call.=FALSE)
+      } else{
+        beepr::beep(completion.sound); Sys.sleep(2); beepr::beep(completion.sound); Sys.sleep(2); beepr::beep(completion.sound)
+      }
+    }
   }
 }

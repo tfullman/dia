@@ -30,14 +30,20 @@ dia(
   shorebird.raster = NULL,
   shorebird.threshold = NULL,
   brant.shp = NULL,
+  hq.quant = 0.75,
   zoi = 4000,
+  area.cpf = 100 * 4046.86,
+  area.sat = 15 * 4046.86,
+  road.width = 18.85953,
   land.dist = 2835.64,
   heli.disturb = 3570,
   proximity.effect = 100,
   proj.info = "EPSG:6393",
   path.in = "Input_Data",
   path.out = "Output_Data",
+  shp.out = TRUE,
   caribou.out = FALSE,
+  brant.out = FALSE,
   suppress.rgdal.proj4.warnings = TRUE,
   n.cores = parallel::detectCores(),
   debug.out = FALSE,
@@ -79,7 +85,7 @@ pad. Defaults to 6437.4 m, similar to what is seen in BLM (2019b).}
 
 \item{n.sat}{Desired number of satellite pads per CPF. This can either be fixed
 or a range, \code{c(min,max)}, from which a random value will be drawn for
-each iteration using a uniform distribution. Defaults to \code{c(4, 8)}
+each iteration using a uniform distribution. Defaults to \code{c(4,8)}
 satellites per CPF.}
 
 \item{rd.exist.file}{Character string indicating the file name for the shapefile
@@ -177,9 +183,24 @@ shapefile, without file extension. Optional, allowing the analysis to be run
 without brant analyses or without any impact analyses. Failure to specify
 this means the brant impact analysis will not be run.}
 
+\item{hq.quant}{Numeric value between 0-1 that indicates the pixel value that
+reflects high-quality habitat. Defaults to 0.75, following Johnson et al. (2005)'s
+use of the upper quartile to represent high-quality habitat.}
+
 \item{zoi}{Numeric value indicating the zone of influence (m) for calculation
 of the surface disturbance buffer and caribou displacement. Defaults to
 4000 m, following Cameron et al. (2005) and Wilson et al. (2013).}
+
+\item{area.cpf}{Numeric value indicating the average size (sq. m) of a CPF
+footprint. Default value equates to 100 acres based on BLM (2019b).}
+
+\item{area.sat}{Numeric value indicating the average size (sq. m) of a
+satellite production facility footprint. Default value equates to 15 acres based
+on BLM (2019a) p.B-6.}
+
+\item{road.width}{Numeric value indicating the estimated road ground
+footprint width (m). Default value based on BLM (2019a) p.B-6. See Fullman
+et al. (in press) for details.}
 
 \item{land.dist}{Numeric value indicating the distance (m) from CPF or
 satellite pads at which helicopters are expected to be under 500 m altitude,
@@ -198,7 +219,8 @@ birds are disturbed by infrastructure proximity effects (e.g., dust
 deposition). Defaults to 100 m as a conservative estimate.}
 
 \item{proj.info}{Desired projection string in EPSG code format (\code{"EPSG:XXXX"}),
-common to all spatial objects in the analysis.}
+common to all spatial objects in the analysis. Defaults to the NAD83 2011 Alaska
+Albers projection (\code{EPSG:6393}).}
 
 \item{path.in}{Character string identifying the relative path from the base
 directory (\code{wd.loc}) to where input data are stored. Defaults to an
@@ -208,10 +230,19 @@ directory (\code{wd.loc}) to where input data are stored. Defaults to an
 directory (\code{wd.loc}) to where output data will be saved. Defaults to
 an "Output_Data" folder within the base folder.}
 
+\item{shp.out}{Logical indicator of whether infrastructure created if
+\code{simulate.in = TRUE} should be written out as shapefiles to \code{path.out}.
+If so, three shapefiles will be written, one each for CPFs, satellite pads, and
+roads. Defaults to \code{TRUE}.}
+
 \item{caribou.out}{Logical indicator of whether the resulting discounted
 caribou RSF raster(s) should be written out. Defaults to \code{FALSE}.}
 
-\item{suppress.rgdal.proj4.warnings}{Logical indicator of whether \href{https://cran.r-project.org/web/packages/rgdal/index.html}{rgdal}
+\item{brant.out}{Logical indicator of whether a shapefile of the affected lakes should
+be written to \code{path.out}. Only written if any lakes are affected. Defaults to
+\code{FALSE}.}
+
+\item{suppress.rgdal.proj4.warnings}{Logical indicator of whether \href{https://cran.r-project.org/package=rgdal}{rgdal}
 warnings about discarded datums in coordinate reference system definitions
 should be suppressed. These are simply to warn developers about the switch
 from \code{proj4string} to \code{WKT CRS} specification, but generate many
@@ -231,16 +262,18 @@ files should be written out for the purpose of debugging code. Defaults to
 \item{completion.sound}{Indication of whether the computer should make a sound
 when the model run is complete and, if so, which sound to play. Defaults to
 no sound (\code{NULL}). Valid inputs are integers corresponding to the sound
-argument options for \code{\link[beepr]{beep}}.}
+argument options for \code{\link[beepr]{beep}}. If \code{!is.null(completion.sound)},
+then the \href{https://cran.r-project.org/package=beepr}{beepr} package must be
+installed.}
 }
 \value{
 Nothing is directly returned by \code{dia}. However, if \code{simulate.inf
-  = TRUE} then .csv files, shapefiles, and an .RData file containing the results
-of the infrastructure simulation will be written to \code{path.out}. If any
-of the species impact analyses are run, a .csv file containing the
-infrastructure summary and species-specific impact results will be written
-to path.out. Regardless, the run times for each iteration are saved in an
-.RData file and the overall model run time is saved as a .csv file.
+  = TRUE} then .csv files, shapefiles (if \code{shp.out = TRUE}), and an .RData file
+containing the results of the infrastructure simulation will be written to
+\code{path.out}. If any of the species impact analyses are run, a .csv file
+containing the infrastructure summary and species-specific impact results will be
+written to \code{path.out}. Regardless, the run times for each iteration are saved
+in an .RData file and the overall model run time is saved as a .csv file.
 }
 \description{
 The \code{dia} function is a wrapper that implements the overall Development
@@ -252,14 +285,15 @@ Infrastructure simulation and species impact analyses can be run individually
 or jointly.
 }
 \details{
-Prior to running \code{dia} the user must create a \code{path.out/RData}
-folder to contain output results. Failure to do this will result in an error.
+The \code{dia} code assumes there is a \code{path.out/RData}
+folder to contain output results. If this does not exist, it will be created by
+the \code{dia} function.
 
 \code{dia} is set up to address discrepancies in spatial object
 projection, but is not designed to deal with misaligned extent or cell size of
-Raster* input data. Prior to using \code{dia}, the user should perform
+\code{SpatRaster} input data. Prior to using \code{dia}, the user should perform
 initial preparation to ensure any raster files have the same extent and
-resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/web/packages/raster/index.html}{raster}
+resolution. For tools to address such data preparation, see the \href{https://cran.r-project.org/package=terra}{terra}
 package.
 
 To speed up analyses, code is run in parallel. However, infrastructure
@@ -315,6 +349,10 @@ alternatives. Ecosphere.
 Jensen KC. 1990. Responses of molting Pacific black brant to
 experimental aircraft disturbance in the Teshekpuk Lake Special Area, Alaska.
 Ph.D. Thesis, Texas A&M University. College Station, TX, USA.
+
+Johnson CJ, Boyce MS, Ray CL, Cluff DH, Gau RJ, Gunn A, Mulders R. 2005.
+Cumulative effects of human developments on arctic wildlife. Wildlife
+Monographs 160:1-36.
 
 Miller MW, Jensen KC, Grant WE, Weller MW. 1994. A simulation model of
 helicopter disturbance of molting Pacific black brant. Ecological Modelling
