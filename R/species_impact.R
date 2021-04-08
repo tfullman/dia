@@ -125,8 +125,9 @@ footprint_generation <- function(cpf.sf, sat.sf, rd.sf, proj.info, area.cpf = 10
 #' @param sb Logical indicator of whether the run is for a shorebird. If so,
 #'   adds a calculation of suitable habitat before calculating quantiles.
 #'   Defaults to \code{FALSE}.
-#' @param hq.quant Numeric value between 0-1 that indicates the quantile value that
-#'   reflects high-quality habitat. Defaults to 0.75, following Johnson et al. (2005).
+#' @param hq.quant Numeric value between 0-1 that indicates the pixel value that
+#'   reflects high-quality habitat. Defaults to 0.75, following Johnson et al. (2005)'s
+#'   use of the upper quartile to represent high-quality habitat.
 #'
 #' @return \code{data.frame} object containing the raster pixel value denoting
 #'   high-quality habitat according to the desired quantile value (\code{quant_hq}),

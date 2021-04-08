@@ -31,8 +31,9 @@ the additional weighting analysis. Defaults to \code{FALSE}.}
 adds a calculation of suitable habitat before calculating quantiles.
 Defaults to \code{FALSE}.}
 
-\item{hq.quant}{Numeric value between 0-1 that indicates the quantile value that
-reflects high-quality habitat. Defaults to 0.75, following Johnson et al. (2005).}
+\item{hq.quant}{Numeric value between 0-1 that indicates the pixel value that
+reflects high-quality habitat. Defaults to 0.75, following Johnson et al. (2005)'s
+use of the upper quartile to represent high-quality habitat.}
 }
 \value{
 \code{data.frame} object containing the raster pixel value denoting
