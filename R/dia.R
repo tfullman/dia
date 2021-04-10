@@ -401,7 +401,7 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
                                                                  "rgeos", "rgdal", "sf", "terra", "units", "udunits2"), .export=c("footprint_generation", "gen_lcp_rd",
                                                                                                                                   "gen_linkage_rd", "generate_cpf", "generate_sat_rd", "impact_brant", "impact_caribou", "impact_shorebird",
                                                                                                                                   "inf_summary", "infrastructure_exclusion_buffer", "infrastructure_proximity_discounting",
-                                                                                                                                  "infrastructure_spacer", "lcp_rds_infield", "lcp_rds_outfield", "poly_rotate", "projection_alignment",
+                                                                                                                                  "infrastructure_spacer", "lcp_rds_infield", "lcp_rds_outfield", "load_spatial", "poly_rotate", "projection_alignment",
                                                                                                                                   "pt_to_pad", "raster_to_zero"), .inorder=FALSE) %dorng% {
                                                                                                                                     indiv.start <- Sys.time()
 
