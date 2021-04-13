@@ -45,6 +45,7 @@ dia(
   caribou.out = FALSE,
   brant.out = FALSE,
   suppress.rgdal.proj4.warnings = TRUE,
+  run.in.parallel = TRUE,
   n.cores = parallel::detectCores(),
   debug.out = FALSE,
   completion.sound = NULL
@@ -249,9 +250,15 @@ from \code{proj4string} to \code{WKT CRS} specification, but generate many
 unnecessary warnings in the \code{dia} code. Defaults to \code{TRUE},
 indicating that warnings will be suppressed.}
 
+\item{run.in.parallel}{Logical indicator of whether the impact analyses will be
+conducted in parallel. Defaults to \code{TRUE}. Used to determine whether
+\code{SpatRaster} outputs are packed for distribution among parallel workers.
+In future versions of this code, this will also make parallel running optional,
+but this is still under development.}
+
 \item{n.cores}{Integer value, indicating the number of cores to be used for
 parallel processing. Defaults to the total number of available cores, as
-determined by parallel::detectCores(). In situations where RAM is limiting,
+determined by \code{parallel::detectCores()}. In situations where RAM is limiting,
 however, it may be helpful to reduce the number of cores used to run
 parallel iterations.}
 

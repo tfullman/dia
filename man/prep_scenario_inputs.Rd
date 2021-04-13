@@ -18,7 +18,8 @@ prep_scenario_inputs(
   wd.loc,
   path.in,
   proj.info,
-  z
+  z,
+  run.in.parallel = TRUE
 )
 }
 \arguments{
@@ -74,6 +75,10 @@ common to all spatial objects in the analysis.}
 
 \item{z}{Iterator value used by \code{\link{dia}} to specify the development
 scenario being analyzed.}
+
+\item{run.in.parallel}{Logical indicator of whether the impact analyses will be
+conducted in parallel. Defaults to \code{TRUE}. Used to determine whether \code{SpatRaster} outputs are
+packed for distribution among parallel workers.}
 }
 \value{
 List containing scenario-specific data for: \code{SpatRaster} indicating
@@ -88,11 +93,14 @@ of stranded leases in Alternative B (\code{alt_B_stranded_leases}),
 \code{TransitionLayer} specific to the stranded leases in the ROW area south of
 Teshekpuk Lake for Alternative C (\code{tr_cost_C_row}), \code{SpatRaster}
 identifying discrete areas north of Teshekpuk Lake where roadless
-development is possible under Alternative D (\code{alt_D_north}).
+development is possible under Alternative D (\code{alt_D_north}). Note that if
+\code{run.in.parallel == TRUE} then all \code{SpatRaster} objects will be returned
+as \code{PackedSpatRaster} objects so that they can be distributed across parallel
+workers.
 }
 \description{
-Some input data needed for infrastructure simulation is common to all scenarios
-while other input data is scenario-specific. The former is prepared by
+Some input data needed for infrastructure simulation are common to all scenarios
+while other input data are scenario-specific. The former are prepared by
 \code{\link{prep_general_inputs}}, while \code{prep_scenario_inputs} prepares
 the scenario-specific data. It thus must be run separately for each scenario.
 }

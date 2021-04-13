@@ -165,8 +165,8 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, d2cp
 
 #' Prepare input data needed for an individual scenario
 #'
-#' Some input data needed for infrastructure simulation is common to all scenarios
-#' while other input data is scenario-specific. The former is prepared by
+#' Some input data needed for infrastructure simulation are common to all scenarios
+#' while other input data are scenario-specific. The former are prepared by
 #' \code{\link{prep_general_inputs}}, while \code{prep_scenario_inputs} prepares
 #' the scenario-specific data. It thus must be run separately for each scenario.
 #'
@@ -203,6 +203,9 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, d2cp
 #' @inheritParams prep_general_inputs
 #' @param z Iterator value used by \code{\link{dia}} to specify the development
 #'   scenario being analyzed.
+#' @param run.in.parallel Logical indicator of whether the impact analyses will be
+#'   conducted in parallel. Defaults to \code{TRUE}. Used to determine whether \code{SpatRaster} outputs are
+#'   packed for distribution among parallel workers.
 #'
 #' @return List containing scenario-specific data for: \code{SpatRaster} indicating
 #'   the relative likelihood of pad development as a function of relative
@@ -216,14 +219,17 @@ prep_general_inputs <- function(rd.exist.file, pad.exist.file, oil.av.file, d2cp
 #'   \code{TransitionLayer} specific to the stranded leases in the ROW area south of
 #'   Teshekpuk Lake for Alternative C (\code{tr_cost_C_row}), \code{SpatRaster}
 #'   identifying discrete areas north of Teshekpuk Lake where roadless
-#'   development is possible under Alternative D (\code{alt_D_north}).
+#'   development is possible under Alternative D (\code{alt_D_north}). Note that if
+#'   \code{run.in.parallel == TRUE} then all \code{SpatRaster} objects will be returned
+#'   as \code{PackedSpatRaster} objects so that they can be distributed across parallel
+#'   workers.
 #'
 #' @references Wilson RR, Liebezeit JR, Loya WM. 2013. Accounting for uncertainty in oil and
 #'   gas development impacts to wildlife in Alaska. Conservation Letters
 #'   6:350-358.
 prep_scenario_inputs <- function(scenario, oil.av, cost.map.file, willow.cpf.ras, pad.res.file,
                                  road.res.file, alt.b.rd.stranded.res.file = NULL, alt.b.stranded.lease.file = NULL,
-                                 alt.c.row.file = NULL, alt.d.north.file = NULL, wd.loc, path.in, proj.info, z){
+                                 alt.c.row.file = NULL, alt.d.north.file = NULL, wd.loc, path.in, proj.info, z, run.in.parallel = TRUE){
 
   #-------------------
   ## Cost map creation
@@ -350,14 +356,26 @@ prep_scenario_inputs <- function(scenario, oil.av, cost.map.file, willow.cpf.ras
   ## Return the needed input data
   #------------------------------
 
-  list.tmp <- list("pad_prob"=pad.prob, "pad_im"=pad.im, "road_res"=road.res, "tr_cost_alt"=tr.cost.alt,
-                   "tr_cost_B_stranded"=NULL, "alt_B_stranded_leases"=NULL, "tr_cost_C_row"=NULL, "alt_D_north"=NULL)
-  if(substr(scenario[z], start=1, stop=5) == "Alt_B"){
-    list.tmp$tr_cost_B_stranded <- tr.cost.alt.b.stranded
-    list.tmp$alt_B_stranded_leases <- alt.b.stranded.leases
+  if(run.in.parallel){
+    list.tmp <- list("pad_prob"=terra::pack(pad.prob), "pad_im"=pad.im, "road_res"=terra::pack(road.res),
+                     "tr_cost_alt"=tr.cost.alt, "tr_cost_B_stranded"=NULL, "alt_B_stranded_leases"=NULL, "tr_cost_C_row"=NULL,
+                     "alt_D_north"=NULL)
+    if(substr(scenario[z], start=1, stop=5) == "Alt_B"){
+      list.tmp$tr_cost_B_stranded <- tr.cost.alt.b.stranded
+      list.tmp$alt_B_stranded_leases <- terra::pack(alt.b.stranded.leases)
+    }
+    if(substr(scenario[z], start=1, stop=5) == "Alt_C") list.tmp$tr_cost_C_row <- tr.cost.alt.c.row
+    if(substr(scenario[z], start=1, stop=5) == "Alt_D") list.tmp$alt_D_north <- terra::pack(alt.d.TLnorth)
+  } else{
+    list.tmp <- list("pad_prob"=pad.prob, "pad_im"=pad.im, "road_res"=road.res, "tr_cost_alt"=tr.cost.alt,
+                     "tr_cost_B_stranded"=NULL, "alt_B_stranded_leases"=NULL, "tr_cost_C_row"=NULL, "alt_D_north"=NULL)
+    if(substr(scenario[z], start=1, stop=5) == "Alt_B"){
+      list.tmp$tr_cost_B_stranded <- tr.cost.alt.b.stranded
+      list.tmp$alt_B_stranded_leases <- alt.b.stranded.leases
+    }
+    if(substr(scenario[z], start=1, stop=5) == "Alt_C") list.tmp$tr_cost_C_row <- tr.cost.alt.c.row
+    if(substr(scenario[z], start=1, stop=5) == "Alt_D") list.tmp$alt_D_north <- alt.d.TLnorth
   }
-  if(substr(scenario[z], start=1, stop=5) == "Alt_C") list.tmp$tr_cost_C_row <- tr.cost.alt.c.row
-  if(substr(scenario[z], start=1, stop=5) == "Alt_D") list.tmp$alt_D_north <- alt.d.TLnorth
 
   return(list.tmp)
 }

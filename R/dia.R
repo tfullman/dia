@@ -166,9 +166,14 @@
 #'   from \code{proj4string} to \code{WKT CRS} specification, but generate many
 #'   unnecessary warnings in the \code{dia} code. Defaults to \code{TRUE},
 #'   indicating that warnings will be suppressed.
+#' @param run.in.parallel Logical indicator of whether the impact analyses will be
+#'   conducted in parallel. Defaults to \code{TRUE}. Used to determine whether
+#'   \code{SpatRaster} outputs are packed for distribution among parallel workers.
+#'   In future versions of this code, this will also make parallel running optional,
+#'   but this is still under development.
 #' @param n.cores Integer value, indicating the number of cores to be used for
 #'   parallel processing. Defaults to the total number of available cores, as
-#'   determined by parallel::detectCores(). In situations where RAM is limiting,
+#'   determined by \code{parallel::detectCores()}. In situations where RAM is limiting,
 #'   however, it may be helpful to reduce the number of cores used to run
 #'   parallel iterations.
 #' @param debug.out Logical indicator of whether intermediate infrastructure .csv
@@ -279,8 +284,8 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
                 shorebird.threshold = NULL, brant.shp = NULL, hq.quant = 0.75, zoi = 4000, area.cpf = 100 * 4046.86,
                 area.sat = 15 * 4046.86, road.width = 18.85953, land.dist = 2835.64, heli.disturb = 3570,
                 proximity.effect = 100, proj.info = "EPSG:6393", path.in = "Input_Data", path.out = "Output_Data", shp.out = TRUE,
-                caribou.out = FALSE, brant.out = FALSE, suppress.rgdal.proj4.warnings = TRUE, n.cores = parallel::detectCores(),
-                debug.out = FALSE, completion.sound = NULL){
+                caribou.out = FALSE, brant.out = FALSE, suppress.rgdal.proj4.warnings = TRUE, run.in.parallel = TRUE,
+                n.cores = parallel::detectCores(), debug.out = FALSE, completion.sound = NULL){
 
 
   ## Suppress rgdal warnings about dropping datums, if desired
@@ -314,6 +319,9 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
 
     ## Calculate the number of high-quality calving pixels (sensu Johnson et al. 2005).
     tch.hq <- calc_highquality(tch.calving, hq.quant=hq.quant)
+
+    ## If running in parallel below, pack the SpatRaster object so it can be distributed among parallel workers
+    if(run.in.parallel) tch.calving <- terra::pack(tch.calving)
   }
 
   ## Prep WAH data, if needed
@@ -324,6 +332,12 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
 
     ## Calculate the number of high-quality calving pixels (sensu Johnson et al. 2005).
     wah.hq <- calc_highquality(x=wah.calving, y=wah.hq.weight, wah=TRUE, hq.quant=hq.quant)
+
+    ## If running in parallel below, pack the SpatRaster objects for distribution among parallel workers
+    if(run.in.parallel){
+      wah.calving <- terra::pack(wah.calving)
+      wah.hq.weight <- terra::pack(wah.hq.weight)
+    }
   }
 
 
@@ -359,6 +373,9 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
         sb.stack <- c(sb.stack, sb.hsi)
       }
     }
+
+    ## If running in parallel below, pack the SpatRaster object for distribution among parallel workers
+    if(run.in.parallel) sb.stack <- terra::pack(sb.stack)
   }
 
 
@@ -385,12 +402,20 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
   for(z in 1:length(scenario)){
     scenario.start <- Sys.time()
 
-    ## Prepare the scenario-specific inputs
-    scen.inputs <- prep_scenario_inputs(scenario = scenario, oil.av = gen.inputs$oil_av,
-                                        cost.map.file = cost.map.file, willow.cpf.ras = gen.inputs$willow_cpf_ras, pad.res.file = pad.res.files[z],
-                                        road.res.file = road.res.files[z], alt.b.rd.stranded.res.file = alt.b.rd.stranded.res.file,
-                                        alt.b.stranded.lease.file = alt.b.stranded.lease.file, alt.c.row.file = alt.c.row.file,
-                                        alt.d.north.file = alt.d.north.file, wd.loc = wd.loc, path.in = path.in, proj.info = proj.info, z = z)
+    ## Extra preparations if infrastructure simulation is to be run
+    if(simulate.inf){
+      ## Prepare the scenario-specific inputs
+      scen.inputs <- prep_scenario_inputs(scenario = scenario, oil.av = gen.inputs$oil_av,
+                                          cost.map.file = cost.map.file, willow.cpf.ras = gen.inputs$willow_cpf_ras, pad.res.file = pad.res.files[z],
+                                          road.res.file = road.res.files[z], alt.b.rd.stranded.res.file = alt.b.rd.stranded.res.file,
+                                          alt.b.stranded.lease.file = alt.b.stranded.lease.file, alt.c.row.file = alt.c.row.file,
+                                          alt.d.north.file = alt.d.north.file, wd.loc = wd.loc, path.in = path.in, proj.info = proj.info, z = z,
+                                          run.in.parallel = run.in.parallel)
+
+      ## Reduce memory usage by removing the first two objects from gen.inputs, as these are only used by
+      ## prep_scenario_inputs() and are not needed in the impact analysis below
+      gen.inputs <- gen.inputs[3:length(gen.inputs)]
+    }
 
     ## Set things up to run in parallel.
     cl <- parallel::makeCluster(n.cores)
@@ -401,8 +426,8 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
                                                                  "rgeos", "rgdal", "sf", "terra", "units", "udunits2"), .export=c("footprint_generation", "gen_lcp_rd",
                                                                                                                                   "gen_linkage_rd", "generate_cpf", "generate_sat_rd", "impact_brant", "impact_caribou", "impact_shorebird",
                                                                                                                                   "inf_summary", "infrastructure_exclusion_buffer", "infrastructure_proximity_discounting",
-                                                                                                                                  "infrastructure_spacer", "lcp_rds_infield", "lcp_rds_outfield", "load_spatial", "poly_rotate", "projection_alignment",
-                                                                                                                                  "pt_to_pad", "raster_to_zero"), .inorder=FALSE) %dorng% {
+                                                                                                                                  "infrastructure_spacer", "lcp_rds_infield", "lcp_rds_outfield", "load_spatial", "poly_rotate",
+                                                                                                                                  "projection_alignment", "pt_to_pad", "raster_to_zero"), .inorder=FALSE) %dorng% {
                                                                                                                                     indiv.start <- Sys.time()
 
                                                                                                                                     #########################################
@@ -416,7 +441,13 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
                                                                                                                                                                proj.info = proj.info, scenario = scenario, z = z, i = i)
 
                                                                                                                                       ## Generate satellite pads and roads for each CPF, including connecting to existing
-                                                                                                                                      ## infrastructure
+                                                                                                                                      ## infrastructure, after unpacking SpatRaster objects if necessary
+                                                                                                                                      if(run.in.parallel){
+                                                                                                                                        scen.inputs$pad_prob <- terra::rast(scen.inputs$pad_prob)
+                                                                                                                                        scen.inputs$road_res <- terra::rast(scen.inputs$road_res)
+                                                                                                                                        if(!is.null(scen.inputs$alt_B_stranded_leases)) scen.inputs$alt_B_stranded_leases <- terra::rast(scen.inputs$alt_B_stranded_leases)
+                                                                                                                                        if(!is.null(scen.inputs$alt_D_north)) scen.inputs$alt_D_north <- terra::rast(scen.inputs$alt_D_north)
+                                                                                                                                      }
                                                                                                                                       satrd.iter <- generate_sat_rd(cpf.df = cpf.iter$cpf_df, cpf.sf = cpf.iter$cpf_sf,
                                                                                                                                                                     pad.exist = gen.inputs$pad_exist, exist.coords = gen.inputs$exist_coords,
                                                                                                                                                                     pad.prob = scen.inputs$pad_prob, alt.b.stranded.leases = scen.inputs$alt_B_stranded_leases,
@@ -477,6 +508,13 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
 
                                                                                                                                       ## Run the desired species-specific impact analyses
                                                                                                                                       if(!is.null(tch.raster) || !is.null(wah.raster)){
+                                                                                                                                        ## Unpack SpatRasters, if needed
+                                                                                                                                        if(run.in.parallel){
+                                                                                                                                          tch.calving <- terra::rast(tch.calving)
+                                                                                                                                          wah.calving <- terra::rast(wah.calving)
+                                                                                                                                          wah.hq.weight <- terra::rast(wah.hq.weight)
+                                                                                                                                        }
+                                                                                                                                        ## Run the caribou impact analysis
                                                                                                                                         out.df <- impact_caribou(surf.disturb=footprints$surf_disturb, tch.raster=tch.raster,
                                                                                                                                                                  wah.raster=wah.raster, tch.calving=tch.calving, wah.calving=wah.calving,
                                                                                                                                                                  wah.hq.weight=wah.hq.weight, out.df=out.df, wd.loc=wd.loc, path.out=path.out,
@@ -485,6 +523,7 @@ dia <- function(wd.loc=getwd(), scenario, simulate.inf = TRUE, n.iter = 100, n.c
                                                                                                                                       }
 
                                                                                                                                       if(!is.null(shorebird.raster)){
+                                                                                                                                        if(run.in.parallel) sb.stack <- terra::rast(sb.stack)
                                                                                                                                         sb.df <- impact_shorebird(sb.stack=sb.stack, rd.sf=rd.sf, sb.df=sb.df)
                                                                                                                                         col.tmp <- ncol(out.df)
                                                                                                                                         out.df <- cbind(out.df, t(sb.df$hq_discount), t(sb.df$hq_remaining))
