@@ -8,7 +8,7 @@
 <!-- badges: end -->
 
 The `dia` package implements the Development Impacts Analysis (DIA)
-model described in Fullman et al. (in press) Ecosphere. The DIA
+model described in Fullman et al. (2021). The DIA
 quantifies potential impacts of future development while accounting for
 uncertainty in development location. This is done through simulation of
 development under different management scenarios with quantification of
@@ -29,6 +29,6 @@ devtools::install_github("tfullman/dia")
 
 ## References
 
-Fullman TJ, Sullender BK, Cameron MD, Joly K. in press. Simulation
+Fullman TJ, Sullender BK, Cameron MD, Joly K. 2021. Simulation
 modeling accounts for uncertainty while quantifying ecological effects
-of development alternatives. Ecosphere.
+of development alternatives. Ecosphere 12(5), e03530.
