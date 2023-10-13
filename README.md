@@ -29,6 +29,6 @@ devtools::install_github("tfullman/dia")
 
 ## References
 
-Fullman TJ, Sullender BK, Cameron MD, Joly K. 2021. Simulation
+Fullman TJ, Sullender BK, Cameron MD, Joly K. 2021. [Simulation
 modeling accounts for uncertainty while quantifying ecological effects
-of development alternatives. Ecosphere 12(5), e03530.
+of development alternatives](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecs2.3530). Ecosphere 12(5), e03530.
